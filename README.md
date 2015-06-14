@@ -26,6 +26,8 @@ If you don't have enough credits to complete the purchase, currently you won't b
 
 [Examples of How to use Galactic Trade](https://imgur.com/a/EYi8M)
 
+###Add compatibility with other mods
+
 1. go to galactic trade mod folder
 2. copy styles.lua
 3. go to mod you want to add support with (if it has extra items)
@@ -58,37 +60,69 @@ This mod is very much in a early stage and might make the save file incompatible
 
 ##Changelog
 **0.1.0**
+
  -Initial release
+ 
 **0.1.1**
+
  -fixed selling values when selling items
+ 
  -fixed all buying chest buying amounts set to 0 when another buying chest is destroyed
+ 
  -added gui for selling chest which shows the value of the items in the chest
+ 
 **0.1.2**
+
  -selling trading chest gui now shows value it will sell for on the market with merchant cut
+ 
 **0.2.0**
+
  -fixed all buying chest buying amounts set to 0 when another buying chest is destroyed (instead of being mined)
+ 
  -added checkbox for enabling/disabling the trading for a specific chest
+ 
  -most items are now available on the market at the price of their recipes resource values
+ 
  -support for other mods with a little bit of work required on the user's end
+ 
 **0.2.1**
+
  -fixed when a trading chest is mined or placed by a robot, it would cause a crash (after trying opening another chest or buying or selling)
+ 
  -if trading chest has more of an item than what you entered to buy, it now shows 0 instead of a negative number
+ 
  -update button in buying trading chest now doesn't set the amount to 0 if a valid number isn't entered
+ 
  -added copy and paste button for buying trading chest
+ 
  -buying trading chest no longer request more items than it can accept
+ 
  -added background for credits amount to make easier to see
+ 
 **0.2.2**
+
  -base resources that don't have values now are shown when values are shown
+ 
  -added values for NEAR mod (uncomment in control.lua) credit to Syriusz
+ 
  -added config.lua and moved loading values for mods there
+ 
  -fixed where modded smelted items didn't have extra value added
+ 
  -added pages for item list and you can now change the size of the item list in the config.lua
+ 
  -now reloads all values when mod loads (in case you want to change it in a map you already started)
+ 
  -fixed some mods causing a loop when finding values
+ 
  -added option in config to reload values on load
+ 
  -added a way to blacklist modded items in config
+ 
 **0.2.3**
+
  -fixed a bug where there wouldn't be more than one page after loading a save with the trading chest[/spoiler]
+ 
 
  [Archive of older versions](https://drive.google.com/folderview?id=0B-yFva9bu-RVfmFVdV9UU3c2bzlDMnJPWW9SX3psVEs2TUdiOElUWGVTaVZ4SDYxY2pQNlk&usp=sharing)
 
