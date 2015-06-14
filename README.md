@@ -21,7 +21,7 @@ If you don't have enough credits to complete the purchase, currently you won't b
 
 ##Video Spotlights
 
-![video](https://youtu.be/TtKj1XPknTc)
+- [https://youtu.be/TtKj1XPknTc]
 
 
 [Examples of How to use Galactic Trade](https://imgur.com/a/EYi8M)
