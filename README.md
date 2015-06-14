@@ -1,16 +1,16 @@
 # GalacticTradeMod-Factorio
 A mod for Factorio which adds a way to buy and sell items. [WIP]
 This mod adds the ability to buy and sell items in the game at market prices. You unlock the chest by researching market trading which comes after electronics. This mod adds two items (shown below) the buying trading chest (left) and the selling trading chest (right).
-[spoiler=picture][img]https://i.imgur.com/Ot9TUrL.jpg?1[/img][/spoiler]
+![img](https://i.imgur.com/Ot9TUrL.jpg?1)
 The selling trading chest adds a gui on the top left of the screen (shown below) which shows you information about the sale of the contents. It also has a checkbox that allows you to disable that chest from selling its contents to the market.
-[spoiler=picture][img]https://i.imgur.com/Vt2hRGc.jpg?1[/img][/spoiler]
+![img](https://i.imgur.com/Vt2hRGc.jpg?1)
 The buying trading chest also gives an additional gui that allows the sale of items. It shows the info about the sale and by clicking on any of the buttons with item icons, it switches the sale to that item. The textbox is where you enter the amount you want to have in the box, make sure you press the update button to update the information. Also like the selling trading box, it has a checkbox which allows the ability to disable that chest from buying things off the market. The copy and paste buttons allow you to copy trading chest values over to other trading chests. The current amount text shows how much it would cost to get the currently requested items, so if you already have 50 iron in the chest and request 100, it shows the price for 50 iron. There are multiple pages of items (which the size of a page can be changed in the config), clicking the left or right arrows will take you to different pages.
-[spoiler=picture][img]https://i.imgur.com/Dg2NVg2.jpg?1[/img][/spoiler]
+![img](https://i.imgur.com/Dg2NVg2.jpg?1)
 Once a day, at noon (in game time of day value of 0) , everything in the selling trading chest is sold for credits with a 15% cut of the buying price. In the buying trading chest, whatever item is sold is bought at the amount requested. Credits are in the top left of the screen (see below). 
-[spoiler=picture][img]https://i.imgur.com/iA9Ehnb.jpg?1[/img][/spoiler]
+![img](https://i.imgur.com/iA9Ehnb.jpg?1)
 If you don't have enough credits to complete the purchase, currently you won't buy anything for that order (each chest has its own order it request). The price of each item is determined by the resources it takes to craft them, any item that can be crafted in the game can be bought. The price is also determined by the crafting time (2 credits for each resource item (recursive)) and if it was smelted (additional 15 credits). Items that have no crafting recipe have a value set manually, so might need balancing. You don't need any research to buy or sell items, you just need the appropriate chests.
 
-[spoiler=media][b]Video Spotlights[/b]
+![b](Video Spotlights)
 [url]https://youtu.be/TtKj1XPknTc[/url]
 
 
