@@ -1,5 +1,4 @@
 # GalacticTradeMod-Factorio
-##A mod for Factorio which adds a way to buy and sell items. [WIP]
 
 This mod adds the ability to buy and sell items in the game at market prices. You unlock the chest by researching market trading which comes after electronics. This mod adds two items (shown below) the buying trading chest (left) and the selling trading chest (right).
 
@@ -19,14 +18,14 @@ Once a day, at noon (in game time of day value of 0) , everything in the selling
 
 If you don't have enough credits to complete the purchase, currently you won't buy anything for that order (each chest has its own order it request). The price of each item is determined by the resources it takes to craft them, any item that can be crafted in the game can be bought. The price is also determined by the crafting time (2 credits for each resource item (recursive)) and if it was smelted (additional 15 credits). Items that have no crafting recipe have a value set manually, so might need balancing. You don't need any research to buy or sell items, you just need the appropriate chests.
 
-##Video Spotlights
+###Video Spotlights
 
 - [https://youtu.be/TtKj1XPknTc]
 
 
 [Examples of How to use Galactic Trade](https://imgur.com/a/EYi8M)
 
-###Add compatibility with other mods
+##Add compatibility with other mods
 
 1. go to galactic trade mod folder
 2. copy styles.lua
