@@ -18,12 +18,14 @@ Once a day, at noon (in game time of day value of 0) , everything in the selling
 
 If you don't have enough credits to complete the purchase, currently you won't buy anything for that order (each chest has its own order it request). The price of each item is determined by the resources it takes to craft them, any item that can be crafted in the game can be bought. The price is also determined by the crafting time (2 credits for each resource item (recursive)) and if it was smelted (additional 15 credits). Items that have no crafting recipe have a value set manually, so might need balancing. You don't need any research to buy or sell items, you just need the appropriate chests.
 
-###Video Spotlights
+###Media
+
+**Video Spotlights**
 
 - [https://youtu.be/TtKj1XPknTc]
 
 
-[Examples of How to use Galactic Trade](https://imgur.com/a/EYi8M)
+**[Examples of How to use Galactic Trade](https://imgur.com/a/EYi8M)**
 
 ##Add compatibility with other mods
 
@@ -65,9 +67,7 @@ This mod is very much in a early stage and might make the save file incompatible
 **0.1.1**
 
  -fixed selling values when selling items
- 
  -fixed all buying chest buying amounts set to 0 when another buying chest is destroyed
- 
  -added gui for selling chest which shows the value of the items in the chest
  
 **0.1.2**
@@ -77,45 +77,29 @@ This mod is very much in a early stage and might make the save file incompatible
 **0.2.0**
 
  -fixed all buying chest buying amounts set to 0 when another buying chest is destroyed (instead of being mined)
- 
  -added checkbox for enabling/disabling the trading for a specific chest
- 
  -most items are now available on the market at the price of their recipes resource values
- 
  -support for other mods with a little bit of work required on the user's end
  
 **0.2.1**
 
  -fixed when a trading chest is mined or placed by a robot, it would cause a crash (after trying opening another chest or buying or selling)
- 
  -if trading chest has more of an item than what you entered to buy, it now shows 0 instead of a negative number
- 
  -update button in buying trading chest now doesn't set the amount to 0 if a valid number isn't entered
- 
  -added copy and paste button for buying trading chest
- 
  -buying trading chest no longer request more items than it can accept
- 
  -added background for credits amount to make easier to see
  
 **0.2.2**
 
  -base resources that don't have values now are shown when values are shown
- 
  -added values for NEAR mod (uncomment in control.lua) credit to Syriusz
- 
  -added config.lua and moved loading values for mods there
- 
  -fixed where modded smelted items didn't have extra value added
- 
  -added pages for item list and you can now change the size of the item list in the config.lua
- 
  -now reloads all values when mod loads (in case you want to change it in a map you already started)
- 
  -fixed some mods causing a loop when finding values
- 
  -added option in config to reload values on load
- 
  -added a way to blacklist modded items in config
  
 **0.2.3**
