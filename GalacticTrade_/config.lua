@@ -1,43 +1,56 @@
-function load_config()
-	if global.gt_extra_item_values == nil then
-		global.gt_extra_item_values = {}
-	end
-	if global.gt_extra_smelted_items == nil then
-		global.gt_extra_smelted_items = {}
-	end
-	if global.gt_extra_blacklist == nil then
-		global.gt_extra_blacklist = {}
-	end
+function load_config(player_index)
+	global.gt_extra_item_values = {}
+	global.gt_extra_smelted_items = {}
+	global.gt_extra_blacklist = {}
+
+	global.gt_items_per_row = global.gt_items_per_row or {} 
+	global.gt_items_per_collum = global.gt_items_per_collum or {}
+	global.gt_enable_trade_alert = global.gt_enable_trade_alert or {}
+	global.gt_forget_search_term = global.gt_forget_search_term or {}
 
 	-- You shouldn't touch anything above this line --
 
-	global.gt_initial_supply_modifier = global.gt_initial_supply_modifier or 1000 --determines how much supply there is with items (based on this number and value)
-	global.gt_items_per_row = 20 --items per row in buying trading chest gui, if there are more than 20 rows, there will be a new page
-	global.gt_items_per_collum = 5 --items per row in buying trading chest gui
-	global.gt_reload_item_values_on_load = false --only do this if you want to change item values, makes load times longer if left on. Eventually there will be a button for it
-	global.gt_instant_buy_button_enabled = false
-	global.gt_starting_credits = 0 --gives you some starting credits
-	global.gt_max_factory_initial_size = 50
-	global.gt_enable_trade_alert = true
-	--Dynamic economies aren't ready yet
-	--global.gt_dynamic_economy = true --enables the economy to be dependent on factories and consumers that provide a supply and demand
-	global.gt_previous_version_support = true --possible that it conflicts with other mods
-	global.gt_transaction_history_limit = 100 -- higher the number the more RAM it uses (and larger save file size)
-	global.gt_forget_search_term = false --after closing a chest the search term in the buying trading chest is forgotten
+	--**If you are trying to add item values to the game, go to the bottom of the file for instructions**
+	--Some settings only can be changed by player 1 (who I call the host even though there isn't a host)
 
-	--mod support, change to true for any mods you want support for
-	gt_NEARMod_values_support = false
-	gt_DytechMod_values_support = false --WARNING these values may not be balanced and may need to be modified
-	gt_torchlight_support = false --just removes the torchlights that aren't used with the torchlight mod
+	if player_index == 1 then --settings only effecting the host
+		global.gt_starting_credits = 0 --gives you some starting credits
+		global.gt_instant_buy_button_enabled = false -- not currently working
+		global.gt_shared_wallet = true --in multiplayer, everyone shares the same credits and chests
+		global.gt_dynamic_economy = true --there is a living and breathing economy and what you buy and sell affects it.
+		global.gt_initial_supply_modifier = 1000000 --basically this number means that at 1000000 credit value, the initial supply will be 0
+
+
+		--mod support, change to true for any mods you want support for
+		gt_alt_vanila_values = false
+		gt_NEARMod_values_support = false
+		gt_DytechMod_values_support = false --WARNING these values may not be balanced and may need to be modified
+		gt_torchlight_support = false --just removes the torchlights that aren't used with the torchlight mod
+
+	end
+
+	--all these other options only effect the client (don't move things around or there will be desync)
+
+	global.gt_items_per_row[player_index] = 20 --items per row in buying trading chest gui, if there are more than 20 rows, there will be a new page
+	global.gt_items_per_collum[player_index] = 5 --items per row in buying trading chest gui
+	global.gt_enable_trade_alert[player_index] = true
+	global.gt_forget_search_term[player_index] = false --after closing a chest the search term in the buying trading chest is forgotten
+
 
 	--add raw resource values here (items which don't have crafting recipies) with their values, see examples below
 
-	--global.gt_extra_item_values["gold-ore"] = 100 -- this is an example for gold ore (make sure you put the item's name that is shown in the lua files, not from in-game, it could be different)
 
+	--global.gt_extra_item_values["gold-ore"] = 100 -- this is an example for gold ore (make sure you put the item's name that is shown in the lua files, not from in-game, it could be different)
 
 	--global.gt_extra_smelted_items["gold-plate"] = true --this says that gold plate is smelted, which adds a little value to it for the fuel cost (the true is just to make my life a little easier)
 
 	--global.gt_extra_blacklist["gold-plate"] = true -- this is if you don't want an item you can buy or sell, this example says that gold plate wont be able to be bought or sold
+
+
+
+	if gt_alt_vanila_values then --use this if you want to edit a specific items value (could still affect other item's values), also be sure to enable it above.
+		global.gt_extra_item_values["coal"] = 100
+	end
 
 	if gt_torchlight_support then
 		global.gt_extra_blacklist["torchlight"] = true
@@ -122,4 +135,5 @@ function load_config()
 		global.gt_extra_smelted_items["cobalt-plate"] = true
 		global.gt_extra_smelted_items["gold-plate"] = true
 	end
+	--copy what you get from TroubleItems.txt below this line then edit the values after the lines that start with global.gt_extra_item_values, look above for examples.
 end
