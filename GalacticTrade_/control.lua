@@ -6,8 +6,11 @@ require 'config'
 --game.getplayer(index or name) for multiplayer support
 
 function comma_value(n) -- credit http://richard.warburton.it
-	local left,num,right = string.match(n,'^([^%d]*%d)(%d*)(.-)$')
-	return left..(num:reverse():gsub('(%d%d%d)','%1,'):reverse())..right
+	if n ~= nil then
+		local left,num,right = string.match(n,'^([^%d]*%d)(%d*)(.-)$')
+		return left..(num:reverse():gsub('(%d%d%d)','%1,'):reverse())..right
+	end
+	return nil
 end
 
 function gt_add_vanilla_base_values()
@@ -34,8 +37,115 @@ function gt_add_mod_base_values()
 	end
 end
 
+function gt_previous_version_support()
+	if global.gt_current_buying_trading_page ~= nil and type(global.gt_current_buying_trading_page) == 'number' then
+		tmp = global.gt_current_buying_trading_page
+		global.gt_current_buying_trading_page = {}
+		global.gt_current_buying_trading_page[1] = tmp
+	end
+	if global.gt_current_search_term ~= nil and type(global.gt_current_search_term) == 'number' then
+		tmp = global.gt_current_search_term
+		global.gt_current_search_term = {}
+		global.gt_current_search_term[1] = tmp
+	end
+	if global.gt_transaction_history ~= nil then
+		for i in pairs(global.gt_transaction_history) do
+			if type(i) == 'number' or i.profit ~= nil then
+				tmp = global.gt_transaction_history
+				global.gt_transaction_history = {}
+				global.gt_transaction_history[1] = tmp
+				break
+			end 
+		end
+	end
+	if global.gt_clipboard_buy ~= nil then
+		for i in ipairs(global.gt_clipboard_buy) do
+			if i.item ~= nil then
+				tmp = global.gt_clipboard_buy
+				global.gt_clipboard_buy = {}
+				global.gt_clipboard_buy[1] = tmp
+				break
+			end 
+		end
+	end
+	if global.transaction_index ~= nil and type(global.transaction_index) == 'number' then
+		tmp = global.transaction_index
+		gglobal.transaction_index = {}
+		global.transaction_index[1] = tmp
+	end
+	if global.credits ~= nil then
+		tmp = global.credits
+		global.credits = nil
+		global.gt_credits = {}
+		global.gt_credits[1] = tmp
+		global.trader_cut_percentage = 0.10 --10% 
+	end
+
+
+	if (global.gt_credits ~= nil and type(global.gt_credits) == 'number') then
+		tmp = global.gt_credits
+		global.gt_credits = {}
+		global.gt_credits[1] = tmp
+		global.trader_cut_percentage = 0.10 --10% 
+	end
+
+	if global.buyingtradingchests ~= nil and global.buyingtradingchests.chest == nil then
+		for _,c in ipairs(global.buyingtradingchests) do
+			global.buyingtradingchests.chest = {}
+			table.insert(global.buyingtradingchests.chest,c)
+		end
+	end
+
+	if global.buyingtradingchests ~= nil and global.buyingtradingchests.player_id == nil then
+		for _,c in ipairs(global.buyingtradingchests) do
+			global.buyingtradingchests.player_id = {}
+			table.insert(global.buyingtradingchests.player_id,1)
+		end
+	end
+
+	if global.buyingtradingchests ~= nil and global.buyingtradingchests.enabled == nil then
+		for _,c in ipairs(global.buyingtradingchests) do
+			global.buyingtradingchests.enabled = {}
+			table.insert(global.buyingtradingchests.enabled,true)
+		end
+	end
+	if global.buyingtradingchests ~= nil and global.buyingtradingchests.item_amount == nil then
+		for _,a in ipairs(global.buyingtradingchests_itemamount) do
+			global.buyingtradingchests.item_amount = {}
+			table.insert(global.buyingtradingchests.item_amount,a)
+		end
+	end
+	if global.buyingtradingchests ~= nil and global.buyingtradingchests.item_selected == nil then
+		for _,i in ipairs(global.buyingtradingchests_itemselected) do
+			global.buyingtradingchests.item_selected = {}
+			table.insert(global.buyingtradingchests.item_selected,i)
+		end
+	end
+	if global.sellingtradingchests ~= nil and global.sellingtradingchests.chest == nil then
+		for _,c in ipairs(global.sellingtradingchests) do
+			global.sellingtradingchests.chest = {}
+			table.insert(global.sellingtradingchests.chest,c)
+		end
+	end
+	if global.sellingtradingchests ~= nil and global.sellingtradingchests.player_id == nil then
+		for _,c in ipairs(global.sellingtradingchests) do
+			global.sellingtradingchests.player_id = {}
+			table.insert(global.sellingtradingchests.player_id,1)
+		end
+	end
+	if global.sellingtradingchests ~= nil and global.sellingtradingchests.enabled == nil then
+		for _,c in ipairs(global.sellingtradingchests) do
+			global.sellingtradingchests.enabled = {}
+			table.insert(global.sellingtradingchests.enabled,true)
+		end
+	end
+
+end
+
 local function load_values(player_index)
 	global.gt_total_items = global.gt_total_items or 0
+
+	gt_previous_version_support()
 
 	load_config(player_index)
 	
@@ -71,11 +181,10 @@ local function load_values(player_index)
 	global.transaction_index = global.transaction_index or {}
 	global.transaction_index[player_index] = global.transaction_index[player_index] or 1
 
-	global.gt_time_value = global.gt_time_value or 2
 	global.gt_smelting_value = global.gt_smelting_value or 15
 	global.gt_credits = global.gt_credits or {}
 	global.gt_credits[player_index] = global.gt_credits[player_index] or global.gt_starting_credits
-	global.trader_cut_percentage = global.trader_cut_percentage or 0.15 --15% 
+	global.trader_cut_percentage = global.trader_cut_percentage or 0.10 --10% 
 	global.gt_clipboard_buy = global.gt_clipboard_buy or {}
 	global.gt_clipboard_buy[player_index] = global.gt_clipboard_buy[player_index] or {}
 
@@ -105,7 +214,7 @@ local function load_values(player_index)
 	global.gt_blacklist["vehicle-machine-gun"] = true
 
 	for name, amount in pairs(global.gt_extra_blacklist) do 
-			global.gt_blacklist[name] = amount
+		global.gt_blacklist[name] = amount
 	end
 
 	global.gt_smelted_items = global.gt_smelted_items or {}
@@ -172,6 +281,21 @@ game.on_save(function()
 	--remove_gui()
 end)
 
+function gt_tech_value(item)
+	value = 0
+	for _,tech in pairs(game.get_player(1).force.technologies) do
+		for i,eff in pairs(tech.effects) do
+			if eff.recipe ~= nil and eff.recipe == item then
+				for _,pre in ipairs(tech.prerequisites) do
+					value = value + pre.research_unit_energy
+				end
+				value = value + tech.research_unit_energy
+			end
+		end
+	end
+	return value * global.gt_tech_cost_modifier
+end
+
 local tmp_values = {}
 function gt_get_item_value(item, num)
 	local value = 0
@@ -203,7 +327,8 @@ function gt_get_item_value(item, num)
 			end
 			value = math.ceil(value / result_num)
 			value = value + math.floor(game.get_player(1).force.recipes[item].energy) --adds value for crafting time
-			if global.gt_smelted_items[item] ~= nil and global.gt_smelted_items[item] ~= false then
+			value = value + gt_tech_value(item) --adds value for technology it requires
+			if global.gt_smelted_items[item] ~= nil and global.gt_smelted_items[item] ~= false then --check recipe to see if it is a smelted item
 				value = value + global.gt_smelting_value
 			end
 			global.gt_base_values[item] = value
@@ -226,6 +351,8 @@ function gt_get_item_market_value(item, num) --could cause a long pause during t
 			order_value = order_value + ((temp_demand/temp_supply)*gt_get_item_value(item,1))
 			temp_supply = temp_supply - 1
 			temp_demand = temp_demand - 1 --demand is only set when you put in an order
+		else
+			order_value = order_value + gt_get_item_value(item,1)
 		end
 	end
 
@@ -289,6 +416,12 @@ game.on_event(defines.events.on_player_created, function(event)
 end)
 
 game.on_event(defines.events.on_tick, function(event)
+
+	for p in pairs(game.players) do
+		if global.gt_credits == nil or type(global.gt_credits) == 'number' then
+			load_values(p)
+		end
+	end
 
 	if #game.players > 0 and game.tick >= 2 and global.gt_loading_index < global.gt_total_items_unfiltered and not(global.gt_loading_done) then
 		current_item = nil
@@ -926,7 +1059,7 @@ game.on_event(defines.events.on_gui_click, function(event)
 		elseif global.gt_transaction_history[transaction_id][global.gt_history_day].total<0 then
 			gt_sign = " "
 		end
-		p.gui.top.gt_info_frame.gt_info_transaction_values_table.gt_info_transaction_history_total.caption = gt_sign..comma_value(global.gt_transaction_history[global.gt_history_day].total).." credits"
+		p.gui.top.gt_info_frame.gt_info_transaction_values_table.gt_info_transaction_history_total.caption = gt_sign..comma_value(global.gt_transaction_history[transaction_id][global.gt_history_day].total).." credits"
 	elseif event.element.name == "gt_last_transaction" then
 		global.gt_history_day = #global.gt_transaction_history[transaction_id]
 		p.gui.top.gt_info_frame.gt_info_transaction_values_table.gt_info_transaction_history_table.gt_transaction_history_day.caption = "Transaction: "..global.gt_history_day

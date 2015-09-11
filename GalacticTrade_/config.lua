@@ -1,12 +1,20 @@
 function load_config(player_index)
-	global.gt_extra_item_values = {}
-	global.gt_extra_smelted_items = {}
-	global.gt_extra_blacklist = {}
+
+	global.gt_extra_item_values = global.gt_extra_item_values or {}
+	global.gt_extra_smelted_items = global.gt_extra_smelted_items or {}
+	global.gt_extra_blacklist = global.gt_extra_blacklist or {}
 
 	global.gt_items_per_row = global.gt_items_per_row or {} 
 	global.gt_items_per_collum = global.gt_items_per_collum or {}
 	global.gt_enable_trade_alert = global.gt_enable_trade_alert or {}
 	global.gt_forget_search_term = global.gt_forget_search_term or {}
+
+	if type(global.gt_items_per_row) == 'number' then
+		global.gt_items_per_row = {}
+		global.gt_items_per_collum = {}
+		global.gt_enable_trade_alert = {}
+		global.gt_forget_search_term = {}
+	end
 
 	-- You shouldn't touch anything above this line --
 
@@ -14,11 +22,13 @@ function load_config(player_index)
 	--Some settings only can be changed by player 1 (who I call the host even though there isn't a host)
 
 	if player_index == 1 then --settings only effecting the host
+		global.gt_extra_item_values = {}
+		global.gt_extra_smelted_items = {}
+		global.gt_extra_blacklist = {}
+
 		global.gt_starting_credits = 0 --gives you some starting credits
-		global.gt_instant_buy_button_enabled = false -- not currently working
 		global.gt_shared_wallet = true --in multiplayer, everyone shares the same credits and chests
-		global.gt_dynamic_economy = true --there is a living and breathing economy and what you buy and sell affects it.
-		global.gt_initial_supply_modifier = 1000000 --basically this number means that at 1000000 credit value, the initial supply will be 0
+		global.gt_tech_cost_modifier = 0 --affects how much of the tech cost goes into the item, 1 meaning full, 0.5 half, 0 none, 2 double, ect
 
 
 		--mod support, change to true for any mods you want support for
@@ -26,6 +36,12 @@ function load_config(player_index)
 		gt_NEARMod_values_support = false
 		gt_DytechMod_values_support = false --WARNING these values may not be balanced and may need to be modified
 		gt_torchlight_support = false --just removes the torchlights that aren't used with the torchlight mod
+
+
+		--unused config options (for now)
+		global.gt_instant_buy_button_enabled = false -- not currently working
+		global.gt_dynamic_economy = true --there is a living and breathing economy and what you buy and sell affects it.
+		global.gt_initial_supply_modifier = 1000000 --basically this number means that at 1000000 credit value, the initial supply will be 0
 
 	end
 
