@@ -3,7 +3,7 @@
 Type: Mod
 Name: Galactic Trade
 Description: Adds the ability to buy and sell items.
-License: [url=https://github.com/coopmaster/GalacticTradeMod-Factorio/blob/master/License]MIT[/url]
+License: [MIT](https://github.com/coopmaster/GalacticTradeMod-Factorio/blob/master/License)
 Version: 0.6.0
 Release: 2015-07-17
 Tested-With-Factorio-Version: 0.12.5
