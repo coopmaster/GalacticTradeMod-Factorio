@@ -283,17 +283,17 @@ end)
 
 function gt_tech_value(item)
 	value = 0
-	for tech in ipairs(game.get_player(1).force.technologies) do
-		for e in ipairs(tech.effects) do
-			if e.name == item then
-				for pre in ipairs(tech.prerequisites) do
-					value = value + pre.researchunitunergy
+	for _,tech in pairs(game.get_player(1).force.technologies) do
+		for i,eff in pairs(tech.effects) do
+			if eff.recipe ~= nil and eff.recipe == item then
+				for _,pre in ipairs(tech.prerequisites) do
+					value = value + pre.research_unit_energy
 				end
-				value = value + tech.researchunitunergy
+				value = value + tech.research_unit_energy
 			end
 		end
 	end
-	return value
+	return value * global.gt_tech_cost_modifier
 end
 
 local tmp_values = {}
