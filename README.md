@@ -213,7 +213,27 @@ Version# (Date): What has changed...
 
  -while making multiplayer support I changed a few small things
 
- -market values now don't recalculate every time the game is reloaded, there is a button that is temporarly located in the market transaction tab[/spoiler]
+ -market values now don't recalculate every time the game is reloaded, there is a button that is temporarly located in the market transaction tab
+ 
+**0.6.1 (2015-09-10)**
+
+ -config is now cleaner and has different config options for clients and servers (both types are also for single player)
+ 
+ -There is now an option to have every player have their own wallet with each trading chest being owned by the person who placed it.
+ 
+ -coin now is tax exempt (merchant doesn't take any cut from it)
+ 
+ -recalculate market values button now actually works
+ 
+ -changed merchant cut to 10%
+ 
+ -recalculate button actually works now
+ 
+ -tech cost not affects market values, you can change how much so in the config
+ 
+ -made it to where saves with older versions should work with this one (post if you get an error)
+ 
+ -you can now change the individual prices of items by adding it to the config and reloading the config and recalculating the item values
 
 
 ##Video Spotlights
