@@ -243,15 +243,24 @@ If you get stuck with the steps, you can check out my video which shows you how 
 
 ##Planned Features
 [done] -GUI for selling chest which will tell the value of items in the chest currently
+
 -slider in buying gui instead of textbox (there isn't slider element yet, as far as I know)
+
 [done] -checkbox for buying and selling chest (to enable and disable trading in that chest)
+
 [done] -chest types that hook to logistics network
+
 -shift+right click and shift+left click copy settings (don't know if possible yet, but have copy and paste buttons for now)
+
 -dynamic economy with simulated factories (WIP)
+
 -better graphics for chests
+
 -a thing that gives info on the market
+
 -multiplayer support
--better mod support for other mods (mostly done, just want to not have to do anything manually)[/spoiler]
+
+-better mod support for other mods (mostly done, just want to not have to do anything manually)
 
 ##Archive
 
