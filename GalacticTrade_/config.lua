@@ -28,7 +28,7 @@ function load_config(player_index)
 
 		global.gt_starting_credits = 0 --gives you some starting credits
 		global.gt_shared_wallet = true --in multiplayer, everyone shares the same credits and chests
-		global.gt_tech_cost_modifier = 0 --affects how much of the tech cost goes into the item, 1 meaning full, 0.5 half, 0 none, 2 double, ect
+		global.gt_tech_cost_modifier = 0.25 --affects how much of the tech cost goes into the item, 1 meaning full, 0.5 half, 0 none, 2 double, ect
 
 
 		--mod support, change to true for any mods you want support for
@@ -36,10 +36,11 @@ function load_config(player_index)
 		gt_NEARMod_values_support = false
 		gt_DytechMod_values_support = false --WARNING these values may not be balanced and may need to be modified
 		gt_torchlight_support = false --just removes the torchlights that aren't used with the torchlight mod
+		global.gt_instant_buy_button_enabled = true 
+		global.gt_instant_sell_button_enabled = true
 
 
 		--unused config options (for now)
-		global.gt_instant_buy_button_enabled = false -- not currently working
 		global.gt_dynamic_economy = true --there is a living and breathing economy and what you buy and sell affects it.
 		global.gt_initial_supply_modifier = 1000000 --basically this number means that at 1000000 credit value, the initial supply will be 0
 
