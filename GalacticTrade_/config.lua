@@ -1,7 +1,6 @@
 function load_config(player_index)
 
 	global.gt_extra_item_values = global.gt_extra_item_values or {}
-	global.gt_extra_smelted_items = global.gt_extra_smelted_items or {}
 	global.gt_extra_blacklist = global.gt_extra_blacklist or {}
 
 	global.gt_items_per_row = global.gt_items_per_row or {} 
@@ -23,7 +22,6 @@ function load_config(player_index)
 
 	if player_index == 1 then --settings only effecting the host
 		global.gt_extra_item_values = {}
-		global.gt_extra_smelted_items = {}
 		global.gt_extra_blacklist = {}
 
 		global.gt_starting_credits = 0 --gives you some starting credits
@@ -58,8 +56,6 @@ function load_config(player_index)
 
 
 	--global.gt_extra_item_values["gold-ore"] = 100 -- this is an example for gold ore (make sure you put the item's name that is shown in the lua files, not from in-game, it could be different)
-
-	--global.gt_extra_smelted_items["gold-plate"] = true --this says that gold plate is smelted, which adds a little value to it for the fuel cost (the true is just to make my life a little easier)
 
 	--global.gt_extra_blacklist["gold-plate"] = true -- this is if you don't want an item you can buy or sell, this example says that gold plate wont be able to be bought or sold
 
@@ -98,17 +94,6 @@ function load_config(player_index)
 		global.gt_extra_item_values["dry-ice"] = 1
 		global.gt_extra_item_values["quartz"] = 30
 		global.gt_extra_item_values["brine-water"] = 5
-
-		global.gt_extra_smelted_items["tin-plate"]=true
-		global.gt_extra_smelted_items["lead-plate"]=true
-		global.gt_extra_smelted_items["zinc-plate"]=true
-		global.gt_extra_smelted_items["titan-plate"]=true
-		global.gt_extra_smelted_items["copper-tungsten-plate"]=true
-		global.gt_extra_smelted_items["tungsten-carbide-plate"]=true
-		global.gt_extra_smelted_items["aluminium-plate"]=true
-		global.gt_extra_smelted_items["bronze-plate"]=true
-		global.gt_extra_smelted_items["gold-plate"] = true
-		
 	end
 
 	if gt_DytechMod_values_support then
@@ -141,16 +126,6 @@ function load_config(player_index)
 		global.gt_extra_item_values["silicon"] = 50
 		global.gt_extra_item_values["sand"] = 10
 		global.gt_extra_item_values["sulfur-wood"] = 15
-		global.gt_extra_smelted_items["lead-plate"] = true
-		global.gt_extra_smelted_items["silver-plate"] = true
-		global.gt_extra_smelted_items["tin-plate"] = true
-		global.gt_extra_smelted_items["tungsten-plate"] = true
-		global.gt_extra_smelted_items["zinc-plate"] = true
-		global.gt_extra_smelted_items["brick"] = true
-		global.gt_extra_smelted_items["glass"] = true
-		global.gt_extra_smelted_items["ardite-plate"] = true
-		global.gt_extra_smelted_items["cobalt-plate"] = true
-		global.gt_extra_smelted_items["gold-plate"] = true
 	end
 	--copy what you get from TroubleItems.txt below this line then edit the values after the lines that start with global.gt_extra_item_values, look above for examples.
 end

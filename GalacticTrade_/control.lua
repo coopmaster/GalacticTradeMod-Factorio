@@ -143,11 +143,16 @@ function gt_previous_version_support()
 end
 
 local function load_values(player_index)
+
 	global.gt_total_items = global.gt_total_items or 0
 
 	if player_index == 1 then
 		gt_previous_version_support()
 	end
+
+	global.gt_release_version = 0 --0.6.3
+	global.gt_major_version = 6
+	global.gt_minor_version = 3
 
 	load_config(player_index)
 	
@@ -193,7 +198,6 @@ local function load_values(player_index)
 	if global.gt_reload_item_values_on_load then
 		global.gt_base_values = {}
 		global.gt_blacklist = {}
-		global.gt_smelted_items = {}
 	end
 
 	global.gt_base_values = global.gt_base_values or {}
@@ -217,17 +221,6 @@ local function load_values(player_index)
 
 	for name, amount in pairs(global.gt_extra_blacklist) do 
 		global.gt_blacklist[name] = amount
-	end
-
-	global.gt_smelted_items = global.gt_smelted_items or {}
-	
-	global.gt_smelted_items["iron-plate"] = true
-	global.gt_smelted_items["copper-plate"] = true
-	global.gt_smelted_items["steel-plate"] = true
-	global.gt_smelted_items["stone-brick"] = true
-
-	for name, amount in pairs(global.gt_extra_smelted_items) do 
-		global.gt_smelted_items[name] = value
 	end
 
 	global.gt_supply = global.gt_supply or {}
@@ -264,7 +257,7 @@ local function create_gui(player_index)
 	if game.get_player(player_index).gui.top.gt_money == nil then
 		game.get_player(player_index).gui.top.add{type="frame", name="gt_money", caption = '', style='frame_style', direction='vertical'}
 		game.get_player(player_index).gui.top.gt_money.add{type="label", name="gt_credits", caption="0 credits"}
-		game.get_player(player_index).gui.top.add{type="button",name="gt_info_button",caption="Transactions"}
+		game.get_player(player_index).gui.top.add{type="button",name="gt_info_button",caption="GT"}
 	end
 
 end
@@ -306,40 +299,41 @@ function gt_get_item_value(item, num)
 		return nil
 	end
 
-	if global.gt_base_values[item] == nil then
-		if game.get_player(1).force.recipes[item] == nil then -- don't care if blacklisted because we still want the value to be saved if it can be found
-			global.gt_base_values[item] = 0
-			return 0
-		else
-			for i, a in pairs(game.get_player(1).force.recipes[item].ingredients) do
-				if tmp_values[a.name] == -1 then
-					global.gt_base_values[item] = 0
-					return 0
-				end
-				tmp_values[a.name] = -1
-				sub_value = gt_get_item_value(a.name, a.amount)
-				tmp_values[a.name] = 0
-				if sub_value == 0 then
-					global.gt_base_values[item] = 0
-					return 0
-				else
-					value = value + sub_value
+	if global.gt_base_values[item] == nil or global.gt_base_values[item] == 0 then
+		for name,r in pairs(game.get_player(1).force.recipes) do
+			if r ~= nil then
+				for _,product in pairs(r.products) do
+					if product ~= nil and product.name == item then
+						for i, a in pairs(r.ingredients) do
+							if tmp_values[a.name] == -1 then
+								global.gt_base_values[item] = 0
+								return 0
+							end
+							tmp_values[a.name] = -1
+							sub_value = gt_get_item_value(a.name, a.amount)
+							tmp_values[a.name] = 0
+							if sub_value == 0 then
+								global.gt_base_values[item] = 0
+								return 0
+							else
+								value = value + sub_value
+							end
+						end
+						result_num = 1
+						for _, b in pairs(r.products) do
+							if b.name == item then
+								result_num = b.amount
+							end
+						end
+						value = math.ceil(value / result_num)
+						value = value + math.floor(r.energy) --adds value for crafting time
+						value = value + gt_tech_value(item) --adds value for technology it requires
+						global.gt_base_values[item] = value
+						value = value * num
+						return value
+					end
 				end
 			end
-			result_num = 1
-			for _, b in pairs(game.get_player(1).force.recipes[item].products) do
-				if b.name == item then
-					result_num = b.amount
-				end
-			end
-			value = math.ceil(value / result_num)
-			value = value + math.floor(game.get_player(1).force.recipes[item].energy) --adds value for crafting time
-			value = value + gt_tech_value(item) --adds value for technology it requires
-			if global.gt_smelted_items[item] ~= nil and global.gt_smelted_items[item] ~= false then --check recipe to see if it is a smelted item
-				value = value + global.gt_smelting_value
-			end
-			global.gt_base_values[item] = value
-			value = value * num
 		end
 	else
 		value = global.gt_base_values[item] * num
