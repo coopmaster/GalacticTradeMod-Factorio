@@ -52,6 +52,53 @@ function get_sellingchest_index(chest)
 	return index
 end
 
+local function update_item_selector_gui(player_index)
+	p = game.get_player(player_index)
+
+	p.gui.left.item_selection.gt_selection_table.item_table.destroy()
+	p.gui.left.item_selection.gt_selection_table.gt_page_right_button.destroy()
+
+	p.gui.left.item_selection.gt_selection_table.add{name="item_table", type="table", colspan=global.gt_items_per_row[player_index]}
+
+	p.gui.left.item_selection.gt_selection_table.add{type="button", name="gt_page_right_button", style="button_style",caption=">>"}
+
+	p.gui.left.item_selection.gt_selection_table.gt_selection_top_center_table.gt_search_bar_textfield.text=global.gt_current_search_term[player_index]
+
+	items = 0
+	if global.gt_current_buying_trading_page[player_index] == 0 then
+		p.gui.left.item_selection.gt_selection_table.item_table.add{type="checkbox",name="blank".."_selection_button",state = false, style = "blank".."_gt_button_style"} --makes it to where is an option to buy nothing
+		items = items + 1 --adds one for the "blank" item
+	end
+	current_item = 0
+	for s, item in pairs(game.item_prototypes) do
+		tmp_values = {}
+		if gt_get_item_value(item.name, 1) > 0 and (global.gt_blacklist[item.name]==nil or global.gt_blacklist[item.name]==false) then
+			if current_item >= (global.gt_current_buying_trading_page[player_index]*global.gt_items_per_row[player_index]*global.gt_items_per_collum[player_index])+1 and (global.gt_current_search_term[player_index] == "" or string.match(item.name,global.gt_current_search_term[player_index])) then
+				p.gui.left.item_selection.gt_selection_table.item_table.add{type="checkbox",name=item.name.."_selection_button",state = false, style = item.name.."_gt_button_style"}
+				items = items + 1
+				if items >= global.gt_items_per_row[player_index]*global.gt_items_per_collum[player_index] then
+					break
+				end
+			end
+			current_item = current_item + 1
+		end
+	end
+end
+
+function gt_update_items_shown(player_index)
+	if p.gui.left.item_selection.gt_selection_table.gt_selection_top_center_table.gt_search_bar_textfield.text ~= global.gt_current_search_term[player_index] then
+		global.gt_current_buying_trading_page[player_index] = 0
+		global.gt_current_search_term[player_index] = p.gui.left.item_selection.gt_selection_table.gt_selection_top_center_table.gt_search_bar_textfield.text
+		update_item_selector_gui(player_index)
+		global.gt_current_filtered_items = 0
+		for s, item in pairs(game.item_prototypes) do
+			if gt_get_item_value(item.name, 1) > 0 and (global.gt_blacklist[item.name]==nil or global.gt_blacklist[item.name]==false) and (global.gt_current_search_term[player_index] == "" or string.match(item.name,global.gt_current_search_term[player_index])) then
+				global.gt_current_filtered_items = global.gt_current_filtered_items + 1
+			end
+		end
+	end
+end
+
 
 game.on_event(defines.events.on_built_entity, function(event)
 	if event.created_entity.name == "trading-chest-buy" or event.created_entity.name == "logistic-trading-chest-buy" then
@@ -216,79 +263,10 @@ game.on_event(defines.events.on_robot_pre_mined, function(event)
 	end
 end)
 
-local function update_item_selector_gui(event)
-
-	p.gui.left.item_selection.destroy()
-
-	p.gui.left.add{type="frame", name="item_selection", style='frame_style', direction='horizontal'}
-	p.gui.left.item_selection.add{name="gt_selection_table", type="table", colspan=3}
-	p.gui.left.item_selection.gt_selection_table.add{type="label",name="blank_label", caption = ""}
-	p.gui.left.item_selection.gt_selection_table.add{type="table",name="gt_selection_top_center_table", colspan=3}
-	p.gui.left.item_selection.gt_selection_table.gt_selection_top_center_table.add{type="textfield",name="gt_search_bar_textfield",text=global.gt_current_search_term[event.player_index]}
-	p.gui.left.item_selection.gt_selection_table.gt_selection_top_center_table.add{type="button",name="gt_search_bar_button",caption="search"}
-	p.gui.left.item_selection.gt_selection_table.gt_selection_top_center_table.add{type="label",name="item_selection_label", caption = "Choose an item to buy"}
-	p.gui.left.item_selection.gt_selection_table.add{type="label",name="item_selection_page_num_label", caption = "page "..global.gt_current_buying_trading_page[event.player_index]+1}
-	p.gui.left.item_selection.gt_selection_table.add{type="button", name="gt_page_left_button", style="button_style",caption="<<"}
-
-	p.gui.left.item_selection.gt_selection_table.add{name="item_table", type="table", colspan=global.gt_items_per_row[event.player_index]}
-
-	p.gui.left.item_selection.gt_selection_table.add{type="button", name="gt_page_right_button", style="button_style",caption=">>"}
-
-	p.gui.left.item_selection.gt_selection_table.gt_selection_top_center_table.gt_search_bar_textfield.text=global.gt_current_search_term[event.player_index]
-
-	items = 0
-	if global.gt_current_buying_trading_page[event.player_index] == 0 then
-		p.gui.left.item_selection.gt_selection_table.item_table.add{type="checkbox",name="blank".."_selection_button",state = false, style = "blank".."_gt_button_style"} --makes it to where is an option to buy nothing
-		items = items + 1 --adds one for the "blank" item
-	end
-	current_item = 0
-	for s, item in pairs(game.item_prototypes) do
-		tmp_values = {}
-		if gt_get_item_value(item.name, 1) ~= 0 and (global.gt_blacklist[item.name]==nil or global.gt_blacklist[item.name]==false) then
-			if current_item >= (global.gt_current_buying_trading_page[event.player_index]*global.gt_items_per_row[event.player_index]*global.gt_items_per_collum[event.player_index])+1 and (global.gt_current_search_term[event.player_index] == "" or string.match(item.name,global.gt_current_search_term[event.player_index])) then
-				p.gui.left.item_selection.gt_selection_table.item_table.add{type="checkbox",name=item.name.."_selection_button",state = false, style = item.name.."_gt_button_style"}
-				items = items + 1
-				if items >= global.gt_items_per_row[event.player_index]*global.gt_items_per_collum[event.player_index] then
-					break
-				end
-			end
-			current_item = current_item + 1
-		end
-	end
-end
-
 function gt_trading_chest_button_click(event)
 	p = game.get_player(event.player_index)
 	if event.element.name == "amount_update_button" then
-		item_index = get_opened_buyingchest_index(event.player_index)
-		n = tonumber(p.gui.left.tradingchest_buy.item_view_table.item_amount_field.text)
-		if n == nil then
-			n = 0
-			p.print("Please enter a valid number") --do not delete
-		else
-			global.buyingtradingchests.item_amount[item_index] = n
-		end
-
-		if global.buyingtradingchests.item_selected[item_index] ~= "blank" and p.opened.get_inventory(1).getbar() * game.item_prototypes[global.buyingtradingchests.item_selected[item_index]].stack_size < global.buyingtradingchests.item_amount[item_index] then
-			global.buyingtradingchests.item_amount[item_index] = p.opened.get_inventory(1).getbar() * game.item_prototypes[global.buyingtradingchests.item_selected[item_index]].stack_size
-		end
-
-		p.gui.left.tradingchest_buy.item_view_table.current_amount_table.item_amount_label.caption = comma_value(global.buyingtradingchests.item_amount[item_index])
-		
-		credit_cost = 0
-		if global.buyingtradingchests.item_selected[item_index] ~= "blank" then
-			item_count = p.opened.get_inventory(1).get_item_count(global.buyingtradingchests.item_selected[item_index])
-			item_difference = global.buyingtradingchests.item_amount[item_index] - item_count
-			tmp_values = {}
-			credit_cost = item_difference * gt_get_item_value(global.buyingtradingchests.item_selected[item_index],1)
-		else
-			credit_cost = 0
-		end
-		if credit_cost < 0 then
-			credit_cost = 0
-		end
-		p.gui.left.tradingchest_buy.item_view_table.current_cost_table.item_cost_label_constant.caption = comma_value(credit_cost)
-
+		gt_update_opened_buying_chest_info(event.player_index)
 		return
 	end
 
@@ -315,23 +293,7 @@ function gt_trading_chest_button_click(event)
 	end
 
 	if event.element.name == "update_chest_value_button" then
-		chest_value = 0
-		for a, b in pairs(global.sellingtradingchests.chest) do
-			if b~=nil and b.position.x == p.opened.position.x and b.position.y == p.opened.position.y then
-				for item, z in pairs(b.get_inventory(1).get_contents()) do
-					if gt_get_item_value(item,1) ~= 0 then
-						if item ~= "coin" then
-							chest_value = chest_value + (gt_get_item_value(item,z)-(gt_get_item_value(item,z)*global.trader_cut_percentage))
-						else
-							chest_value = chest_value + gt_get_item_value(item,z)
-						end
-					end
-				end
-				break
-			end
-		end
-		chest_value = math.floor(chest_value)
-		p.gui.left.tradingchest_sell.tradingchest_sell_table.chest_value_table.chest_value_label.caption = comma_value(chest_value)
+		gt_update_opened_selling_chest_info(event.player_index)
 		return
 	end
 
@@ -405,7 +367,7 @@ function gt_trading_chest_button_click(event)
 
 		if global.gt_current_buying_trading_page[event.player_index] < math.ceil(global.gt_current_filtered_items/(global.gt_items_per_row[event.player_index]*global.gt_items_per_collum[event.player_index]))-1 then
 			global.gt_current_buying_trading_page[event.player_index] = global.gt_current_buying_trading_page[event.player_index] + 1
-			update_item_selector_gui(event)
+			update_item_selector_gui(event.player_index)
 		end
 		return
 	end
@@ -413,21 +375,13 @@ function gt_trading_chest_button_click(event)
 	if event.element.name == "gt_page_left_button" then
 		if global.gt_current_buying_trading_page[event.player_index] > 0 then
 			global.gt_current_buying_trading_page[event.player_index] = global.gt_current_buying_trading_page[event.player_index] - 1
-			update_item_selector_gui(event)
+			update_item_selector_gui(event.player_index)
 		end
 		return
 	end
 
 	if event.element.name == "gt_search_bar_button" then
-		global.gt_current_buying_trading_page[event.player_index] = 0
-		global.gt_current_search_term[event.player_index] = p.gui.left.item_selection.gt_selection_table.gt_selection_top_center_table.gt_search_bar_textfield.text
-		update_item_selector_gui(event)
-		global.gt_current_filtered_items = 0
-		for s, item in pairs(game.item_prototypes) do
-			if gt_get_item_value(item.name, 1) ~= 0 and (global.gt_blacklist[item.name]==nil or global.gt_blacklist[item.name]==false) and (global.gt_current_search_term[event.player_index] == "" or string.match(item.name,global.gt_current_search_term[event.player_index])) then
-				global.gt_current_filtered_items = global.gt_current_filtered_items + 1
-			end
-		end
+		gt_update_items_shown(event.player_index)
 		return
 	end
 
@@ -446,6 +400,9 @@ function gt_trading_chest_button_click(event)
 			p.gui.left.tradingchest_buy.item_view_table.current_item_button.style = item.name.."_gt_button_style"
 			tmp_values = {}
 			p.gui.left.tradingchest_buy.item_view_table.current_ppu_table.item_ppu_label.caption=comma_value(gt_get_item_value(item.name,1))
+			if not(global.gt_auto_update_info) then
+				gt_update_opened_buying_chest_info(event.player_index)
+			end
 			break
 		end
 	end
