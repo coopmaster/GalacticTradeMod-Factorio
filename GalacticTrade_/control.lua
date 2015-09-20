@@ -78,7 +78,6 @@ function gt_previous_version_support()
 		global.credits = nil
 		global.gt_credits = {}
 		global.gt_credits[1] = tmp
-		global.trader_cut_percentage = 0.10 --10% 
 	end
 
 
@@ -86,7 +85,6 @@ function gt_previous_version_support()
 		tmp = global.gt_credits
 		global.gt_credits = {}
 		global.gt_credits[1] = tmp
-		global.trader_cut_percentage = 0.10 --10% 
 	end
 
 	if global.buyingtradingchests ~= nil and global.buyingtradingchests.chest == nil then
@@ -191,7 +189,6 @@ local function load_values(player_index)
 	global.gt_smelting_value = global.gt_smelting_value or 15
 	global.gt_credits = global.gt_credits or {}
 	global.gt_credits[player_index] = global.gt_credits[player_index] or global.gt_starting_credits
-	global.trader_cut_percentage = global.trader_cut_percentage or 0.10 --10% 
 	global.gt_clipboard_buy = global.gt_clipboard_buy or {}
 	global.gt_clipboard_buy[player_index] = global.gt_clipboard_buy[player_index] or {}
 
@@ -268,23 +265,38 @@ game.on_init(function()
 	end
 end)
 
-game.on_load(function()
-
+game.on_event(defines.events.on_player_created, function(event)
+	load_values(event.player_index)
+	create_gui(event.player_index)
+	if event.player_index == 1 then
+		initiate_reload_item_values()
+	end
 end)
 
-game.on_save(function()
-	--remove_gui()
-end)
+function gt_get_trade_efficiency()
+	if game.get_player(1).force.technologies["tradingefficiency3"].researched then
+		return 0.01
+	elseif game.get_player(1).force.technologies["tradingefficiency2"].researched then
+		return 0.05
+	elseif game.get_player(1).force.technologies["tradingefficiency1"].researched then
+		return 0.10
+	else
+		return 0.15
+	end
+end
+
 
 function gt_tech_value(item)
 	value = 0
 	for _,tech in pairs(game.get_player(1).force.technologies) do
-		for i,eff in pairs(tech.effects) do
-			if eff.recipe ~= nil and eff.recipe == item then
-				for _,pre in ipairs(tech.prerequisites) do
-					value = value + pre.research_unit_energy
+		if tech.enabled then
+			for i,eff in pairs(tech.effects) do
+				if eff.recipe ~= nil and eff.recipe == item then
+					for _,pre in ipairs(tech.prerequisites) do
+						value = value + pre.research_unit_energy
+					end
+					value = value + tech.research_unit_energy
 				end
-				value = value + tech.research_unit_energy
 			end
 		end
 	end
@@ -299,11 +311,15 @@ function gt_get_item_value(item, num)
 		return nil
 	end
 
-	if global.gt_base_values[item] == nil or global.gt_base_values[item] == 0 then
-		for name,r in pairs(game.get_player(1).force.recipes) do
-			if r ~= nil then
+	if global.gt_blacklist[item] ~= nil and global.gt_blacklist[item] == true then
+		return 0
+	end
+
+	if global.gt_base_values[item] == nil and not(global.gt_blacklist[item]) then
+		for n,r in pairs(game.get_player(1).force.recipes) do
+			if r ~= nil and not(r.hidden) then
 				for _,product in pairs(r.products) do
-					if product ~= nil and product.name == item then
+					if product ~= nil and product.name == item and product.amount ~= nil and product.amount > 0 and #r.ingredients > 0 then
 						for i, a in pairs(r.ingredients) do
 							if tmp_values[a.name] == -1 then
 								global.gt_base_values[item] = 0
@@ -319,13 +335,7 @@ function gt_get_item_value(item, num)
 								value = value + sub_value
 							end
 						end
-						result_num = 1
-						for _, b in pairs(r.products) do
-							if b.name == item then
-								result_num = b.amount
-							end
-						end
-						value = math.ceil(value / result_num)
+						value = math.ceil(value / product.amount)
 						value = value + math.floor(r.energy) --adds value for crafting time
 						value = value + gt_tech_value(item) --adds value for technology it requires
 						global.gt_base_values[item] = value
@@ -339,7 +349,7 @@ function gt_get_item_value(item, num)
 		value = global.gt_base_values[item] * num
 		return value
 	end
-	return value
+	return -1
 end
 
 function gt_get_item_market_value(item, num) --could cause a long pause during trading late game, need to check
@@ -398,7 +408,7 @@ function get_selling_price(item,amount)
 
 	if item ~= "blank" then
 		if item ~= "coin" then
-			price = gt_get_item_value(item,amount)-(gt_get_item_value(item,amount) * global.trader_cut_percentage)
+			price = gt_get_item_value(item,amount)-(gt_get_item_value(item,amount) * gt_get_trade_efficiency())
 		else
 			price = gt_get_item_value(item,amount)
 		end
@@ -417,7 +427,7 @@ function sell_resources_from_chest(chest,items,amounts)--set items and amounts t
 
 	for i,a in pairs(chest.get_inventory(1).get_contents()) do
 		if i ~= nil then
-			if get_selling_price(i,1) ~= 0 and not(global.gt_blacklist[i]) then
+			if get_selling_price(i,1) > 0 and not(global.gt_blacklist[i]) then
 				if items ~= nil then
 					for indx,name in ipairs(items) do
 						if name == i then
@@ -575,16 +585,58 @@ function buy_resources_from_chest(chest)--buy items and amounts to null for ever
 	end
 end
 
-game.on_event(defines.events.on_player_created, function(event)
-	load_values(event.player_index)
-	create_gui(event.player_index)
-	if event.player_index == 1 then
-		initiate_reload_item_values()
+function gt_update_opened_buying_chest_info(player_index)
+	item_index = get_opened_buyingchest_index(player_index)
+	n = tonumber(p.gui.left.tradingchest_buy.item_view_table.item_amount_field.text)
+	if n == nil then
+		n = 0
 	end
-end)
+	if n == nil then
+		n = 0
+		p.print("Please enter a valid number") --do not delete
+	else
+		global.buyingtradingchests.item_amount[item_index] = n
+	end
+
+	if global.buyingtradingchests.item_selected[item_index] ~= "blank" and p.opened.get_inventory(1).getbar() * game.item_prototypes[global.buyingtradingchests.item_selected[item_index]].stack_size < global.buyingtradingchests.item_amount[item_index] then
+		global.buyingtradingchests.item_amount[item_index] = p.opened.get_inventory(1).getbar() * game.item_prototypes[global.buyingtradingchests.item_selected[item_index]].stack_size
+	end
+
+	p.gui.left.tradingchest_buy.item_view_table.current_amount_table.item_amount_label.caption = comma_value(global.buyingtradingchests.item_amount[item_index])
+	
+	credit_cost = 0
+	if global.buyingtradingchests.item_selected[item_index] ~= "blank" then
+		item_count = p.opened.get_inventory(1).get_item_count(global.buyingtradingchests.item_selected[item_index])
+		item_difference = global.buyingtradingchests.item_amount[item_index] - item_count
+		tmp_values = {}
+		credit_cost = item_difference * gt_get_item_value(global.buyingtradingchests.item_selected[item_index],1)
+	else
+		credit_cost = 0
+	end
+	if credit_cost < 0 then
+		credit_cost = 0
+	end
+	p.gui.left.tradingchest_buy.item_view_table.current_cost_table.item_cost_label_constant.caption = comma_value(credit_cost)
+end
+
+function gt_update_opened_selling_chest_info(player_index)
+	chest_value = 0
+	chest_index = get_opened_sellingchest_index(player_index)
+	for item, z in pairs(global.sellingtradingchests.chest[chest_index].get_inventory(1).get_contents()) do
+		if gt_get_item_value(item,1) > 0 then
+			if item ~= "coin" then
+				chest_value = chest_value + (gt_get_item_value(item,z)-(gt_get_item_value(item,z)*gt_get_trade_efficiency()))
+			else
+				chest_value = chest_value + gt_get_item_value(item,z)
+			end
+		end
+	end
+	chest_value = math.floor(chest_value)
+	p.gui.left.tradingchest_sell.tradingchest_sell_table.chest_value_table.chest_value_label.caption = comma_value(chest_value)
+end
+
 
 game.on_event(defines.events.on_tick, function(event)
-
 	for p in pairs(game.players) do
 		if global.gt_credits == nil or type(global.gt_credits) == 'number' then
 			load_values(p)
@@ -603,26 +655,14 @@ game.on_event(defines.events.on_tick, function(event)
 		end
 		if current_item ~= nil then
 			value = gt_get_item_value(current_item.name, 1)
-			if value ~= 0 then
+			if value > 0 then
 				global.gt_base_values[current_item.name] = value
 				global.gt_total_items = global.gt_total_items + 1
-			else
-				if game.get_player(1).force.recipes[current_item.name]==nil and (global.gt_blacklist[current_item.name]==nil or global.gt_blacklist[current_item.name]== false) then
-					in_list = false
-					for a, b in pairs(global.gt_items_without_cost) do
-						if b == current_item.name then
-							in_list	= true
-						end
-					end
-					if not(in_list) then
-						table.insert(global.gt_items_without_cost,current_item.name)
-						global.gt_blacklist[current_item.name] = true
-					end
-					global.gt_blacklist[current_item.name] = true
-				end
+			elseif value == -1 then
+				global.gt_blacklist[current_item.name] = true
 			end
 		else
-			if current_item ~= nil and global.gt_base_values[current_item.name] ~= 0 then
+			if current_item ~= nil and global.gt_base_values[current_item.name] > 0 then
 				global.gt_total_items = global.gt_total_items + 1
 			end
 		end
@@ -745,7 +785,9 @@ game.on_event(defines.events.on_tick, function(event)
 					p.gui.left.tradingchest_buy.item_view_table.item_amount_field.text = global.buyingtradingchests.item_amount[item_index]
 
 					p.gui.left.tradingchest_buy.add{name="gt_buttons", type="table", colspan=1}
-					p.gui.left.tradingchest_buy.gt_buttons.add{type="button", name="amount_update_button", style="button_style",caption="Update Amount"}
+					if not(global.gt_auto_update_info) then
+						p.gui.left.tradingchest_buy.gt_buttons.add{type="button", name="amount_update_button", style="button_style",caption="Update Amount"}
+					end
 					p.gui.left.tradingchest_buy.gt_buttons.add{name="gt_cp_buttons_table", type="table", colspan=2}
 					p.gui.left.tradingchest_buy.gt_buttons.gt_cp_buttons_table.add{type="button", name="buying_chest_copy", style="button_style",caption="Copy"}
 					p.gui.left.tradingchest_buy.gt_buttons.gt_cp_buttons_table.add{type="button", name="buying_chest_paste", style="button_style",caption="Paste"}
@@ -761,8 +803,12 @@ game.on_event(defines.events.on_tick, function(event)
 					p.gui.left.item_selection.gt_selection_table.add{type="label",name="gt_selection_top_center_label",caption=""}
 					p.gui.left.item_selection.gt_selection_table.add{type="table",name="gt_selection_top_center_table", colspan=3}
 					p.gui.left.item_selection.gt_selection_table.gt_selection_top_center_table.add{type="textfield",name="gt_search_bar_textfield"}
-					p.gui.left.item_selection.gt_selection_table.gt_selection_top_center_table.add{type="button",name="gt_search_bar_button",caption="search"}
-					p.gui.left.item_selection.gt_selection_table.gt_selection_top_center_table.add{type="label",name="item_selection_label", caption = "Choose an item to buy"}
+					if not(global.gt_auto_update_info) then
+						p.gui.left.item_selection.gt_selection_table.gt_selection_top_center_table.add{type="button",name="gt_search_bar_button",caption="search"}
+					else
+						p.gui.left.item_selection.gt_selection_table.gt_selection_top_center_table.add{type="label",name="gt_selection_top_center_label2",caption="     "}
+					end
+					p.gui.left.item_selection.gt_selection_table.gt_selection_top_center_table.add{type="label",name="item_selection_label", caption = "Choose an item to buy below"}
 					p.gui.left.item_selection.gt_selection_table.add{type="label",name="item_selection_page_num_label", caption = "page "..global.gt_current_buying_trading_page[index]+1}
 					p.gui.left.item_selection.gt_selection_table.add{type="button", name="gt_page_left_button", style="button_style",caption="<<"}
 
@@ -777,7 +823,7 @@ game.on_event(defines.events.on_tick, function(event)
 					end
 					current_item = 0
 					for s, item in pairs(game.item_prototypes) do
-						if gt_get_item_value(item.name, 1) ~= 0 and (global.gt_blacklist[item.name]==nil or global.gt_blacklist[item.name]==false) then
+						if gt_get_item_value(item.name, 1) > 0 and (global.gt_blacklist[item.name]==nil or global.gt_blacklist[item.name]==false) then
 							if current_item >= (global.gt_current_buying_trading_page[index]*global.gt_items_per_row[index]*global.gt_items_per_collum[index])+1 and (global.gt_current_search_term[index] == "" or string.match(item.name,global.gt_current_search_term[index])) then
 								p.gui.left.item_selection.gt_selection_table.item_table.add{type="checkbox",name=item.name.."_selection_button",state = false, style = item.name.."_gt_button_style"}
 								items = items + 1
@@ -789,91 +835,68 @@ game.on_event(defines.events.on_tick, function(event)
 						end
 					end
 				else
-					item_index = get_opened_buyingchest_index(index)
-					n = tonumber(p.gui.left.tradingchest_buy.item_view_table.item_amount_field.text)
-					if p.gui.left.tradingchest_buy.item_view_table.item_amount_field.text == "" then
-						n = 0
-					end
-					if n ~= nil and n ~= global.buyingtradingchests.item_amount[item_index] then--what is in the fields aren't what is in memory, update memory
-						if n == nil then
-							n = 0
-							p.print("Please enter a valid number") --do not delete
-						else
-							global.buyingtradingchests.item_amount[item_index] = n
-						end
-
-						if global.buyingtradingchests.item_selected[item_index] ~= "blank" and p.opened.get_inventory(1).getbar() * game.item_prototypes[global.buyingtradingchests.item_selected[item_index]].stack_size < global.buyingtradingchests.item_amount[item_index] then
-							global.buyingtradingchests.item_amount[item_index] = p.opened.get_inventory(1).getbar() * game.item_prototypes[global.buyingtradingchests.item_selected[item_index]].stack_size
-						end
-
-						p.gui.left.tradingchest_buy.item_view_table.current_amount_table.item_amount_label.caption = comma_value(global.buyingtradingchests.item_amount[item_index])
-						
-						credit_cost = 0
-						if global.buyingtradingchests.item_selected[item_index] ~= "blank" then
-							item_count = p.opened.get_inventory(1).get_item_count(global.buyingtradingchests.item_selected[item_index])
-							item_difference = global.buyingtradingchests.item_amount[item_index] - item_count
-							tmp_values = {}
-							credit_cost = item_difference * gt_get_item_value(global.buyingtradingchests.item_selected[item_index],1)
-						else
-							credit_cost = 0
-						end
-						if credit_cost < 0 then
-							credit_cost = 0
-						end
-						p.gui.left.tradingchest_buy.item_view_table.current_cost_table.item_cost_label_constant.caption = comma_value(credit_cost)
+					if global.gt_auto_update_info then
+						gt_update_opened_buying_chest_info(index)
+						gt_update_items_shown(index)
 					end
 				end
 			end
 
-			if (p.opened.name == "trading-chest-sell" or p.opened.name == "logistic-trading-chest-sell") and p.gui.left.tradingchest_sell == nil then --selling chest gui
-				p.gui.left.add{type="frame", name="tradingchest_sell", caption = 'Selling Info', style='frame_style', direction='vertical'}
+			if p.opened.name == "trading-chest-sell" or p.opened.name == "logistic-trading-chest-sell" then
+				if p.gui.left.tradingchest_sell == nil then --selling chest gui
+					p.gui.left.add{type="frame", name="tradingchest_sell", caption = 'Selling Info', style='frame_style', direction='vertical'}
 
-				item_index = get_opened_sellingchest_index(index)
+					item_index = get_opened_sellingchest_index(index)
 
-				if global.sellingtradingchests.enabled[item_index] == nil then
-					if global.sellingtradingchests.enabled == nil then
-						global.sellingtradingchests.enabled = {}
+					if global.sellingtradingchests.enabled[item_index] == nil then
+						if global.sellingtradingchests.enabled == nil then
+							global.sellingtradingchests.enabled = {}
+						end
+						global.sellingtradingchests.enabled[item_index] = true
 					end
-					global.sellingtradingchests.enabled[item_index] = true
-				end
 
-				p.gui.left.tradingchest_sell.add{type="table", name="tradingchest_sell_table",colspan=1}
+					p.gui.left.tradingchest_sell.add{type="table", name="tradingchest_sell_table",colspan=1}
 
-				if not(global.gt_shared_wallet) and #game.players > 1 then
-					p.gui.left.tradingchest_sell.tradingchest_sell_table.add{type="label",name="owner_label",caption="Owner: "..game.get_player(global.buyingtradingchests.player_id[item_index]).name}
-				end
+					if not(global.gt_shared_wallet) and #game.players > 1 then
+						p.gui.left.tradingchest_sell.tradingchest_sell_table.add{type="label",name="owner_label",caption="Owner: "..game.get_player(global.buyingtradingchests.player_id[item_index]).name}
+					end
 
-				p.gui.left.tradingchest_sell.tradingchest_sell_table.add{type="checkbox",name="sellingchest_enabled_checkbox",state=global.sellingtradingchests.enabled[item_index], caption="Enabled"}
+					p.gui.left.tradingchest_sell.tradingchest_sell_table.add{type="checkbox",name="sellingchest_enabled_checkbox",state=global.sellingtradingchests.enabled[item_index], caption="Enabled"}
 
-				p.gui.left.tradingchest_sell.tradingchest_sell_table.add{name="merch_info_table", type="table", colspan=3} --table of labels that tells merchant cut
-				p.gui.left.tradingchest_sell.tradingchest_sell_table.merch_info_table.add{type="label", name="merch_info_label_constant_1", caption="Merchant Cut: "}
-				p.gui.left.tradingchest_sell.tradingchest_sell_table.merch_info_table.add{type="label", name="merch_cut_label", caption=global.trader_cut_percentage*100}
-				p.gui.left.tradingchest_sell.tradingchest_sell_table.merch_info_table.add{type="label", name="merch_info_label_constant_2", caption="%"}
+					p.gui.left.tradingchest_sell.tradingchest_sell_table.add{name="merch_info_table", type="table", colspan=3} --table of labels that tells merchant cut
+					p.gui.left.tradingchest_sell.tradingchest_sell_table.merch_info_table.add{type="label", name="merch_info_label_constant_1", caption="Merchant Cut: "}
+					p.gui.left.tradingchest_sell.tradingchest_sell_table.merch_info_table.add{type="label", name="merch_cut_label", caption=gt_get_trade_efficiency()*100}
+					p.gui.left.tradingchest_sell.tradingchest_sell_table.merch_info_table.add{type="label", name="merch_info_label_constant_2", caption="%"}
 
-				p.gui.left.tradingchest_sell.tradingchest_sell_table.add{name="chest_value_table", type="table", colspan=3}
-				p.gui.left.tradingchest_sell.tradingchest_sell_table.chest_value_table.add{type="label", name="chest_value_label_constant_1", caption="Value of items in chest: "}
-				chest_value = 0
-				for a, b in pairs(global.sellingtradingchests.chest) do
-					if b ~= nil then
-						if b.position.x == p.opened.position.x and b.position.y == p.opened.position.y then
-							for item, z in pairs(b.get_inventory(1).get_contents()) do
-								if gt_get_item_value(item,1) ~= 0 then
-									if item ~= "coin" then
-										chest_value = chest_value + (gt_get_item_value(item,z)-(gt_get_item_value(item,z)*global.trader_cut_percentage))
-									else
-										chest_value = chest_value + gt_get_item_value(item,z)
+					p.gui.left.tradingchest_sell.tradingchest_sell_table.add{name="chest_value_table", type="table", colspan=3}
+					p.gui.left.tradingchest_sell.tradingchest_sell_table.chest_value_table.add{type="label", name="chest_value_label_constant_1", caption="Value of items in chest: "}
+					chest_value = 0
+					for a, b in pairs(global.sellingtradingchests.chest) do
+						if b ~= nil then
+							if b.position.x == p.opened.position.x and b.position.y == p.opened.position.y then
+								for item, z in pairs(b.get_inventory(1).get_contents()) do
+									if gt_get_item_value(item,1) > 0 then
+										if item ~= "coin" then
+											chest_value = chest_value + (gt_get_item_value(item,z)-(gt_get_item_value(item,z)*gt_get_trade_efficiency()))
+										else
+											chest_value = chest_value + gt_get_item_value(item,z)
+										end
 									end
 								end
+								break
 							end
-							break
 						end
 					end
-				end
-				chest_value = math.floor(chest_value)
-				p.gui.left.tradingchest_sell.tradingchest_sell_table.chest_value_table.add{type="label", name="chest_value_label", caption=comma_value(chest_value)}
-				p.gui.left.tradingchest_sell.tradingchest_sell_table.add{type="button",name="update_chest_value_button",caption="Update"}
-				if global.gt_instant_sell_button_enabled then
-					p.gui.left.tradingchest_sell.tradingchest_sell_table.add{type="button",name="instant_sell_button",caption="Instant Sell"}
+					chest_value = math.floor(chest_value)
+					p.gui.left.tradingchest_sell.tradingchest_sell_table.chest_value_table.add{type="label", name="chest_value_label", caption=comma_value(chest_value)}
+					if not(global.gt_auto_update_info) then
+						p.gui.left.tradingchest_sell.tradingchest_sell_table.add{type="button",name="update_chest_value_button",caption="Update"}
+					end
+					if global.gt_instant_sell_button_enabled then
+						p.gui.left.tradingchest_sell.tradingchest_sell_table.add{type="button",name="instant_sell_button",caption="Instant Sell"}
+					end
+				else
+					gt_update_opened_selling_chest_info(index)
 				end
 			end
 
@@ -992,9 +1015,9 @@ function create_transaction_info_gui(player_index)
 	for i, c in ipairs(global.sellingtradingchests.chest) do
 		for item, z in pairs(c.get_inventory(1).get_contents()) do
 			if transaction_id == global.sellingtradingchests.player_id[i] then
-				v = (gt_get_item_value(item,z))-(gt_get_item_value(item,z) * global.trader_cut_percentage)
+				v = (gt_get_item_value(item,z))-(gt_get_item_value(item,z) * gt_get_trade_efficiency())
 				v = math.floor(v)
-				if v ~= 0 then
+				if v > 0 then
 					gt_profit = gt_profit + v
 				end
 			end

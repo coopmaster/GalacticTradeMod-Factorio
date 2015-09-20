@@ -53,5 +53,68 @@ data:extend({
         time = 30
       },
       order = "c-k-d",
+  },
+  {
+    type = "technology",
+    name = "tradingefficiency1",
+    icon = "__GalacticTrade__/graphics/icons/moneysign.png",
+    effects ={
+    },
+    prerequisites = {
+      "tradingtech"
+    },
+    unit = {
+      count = 50,
+      ingredients = {
+        {"science-pack-1", 1},
+        {"science-pack-2", 1},
+        {"science-pack-3", 1}
+      },
+      time = 30
+    },
+    upgrade = true,
+    order = "g-t-a-a"
+  },
+  {
+    type = "technology",
+    name = "tradingefficiency2",
+    icon = "__GalacticTrade__/graphics/icons/moneysign.png",
+    effects ={
+    },
+    prerequisites = {
+      "tradingefficiency1"
+    },
+    unit = {
+      count = 150,
+      ingredients = {
+        {"science-pack-1", 1},
+        {"science-pack-2", 1},
+        {"science-pack-3", 1}
+      },
+      time = 30
+    },
+    upgrade = true,
+    order = "g-t-a-b"
+  },
+  {
+    type = "technology",
+    name = "tradingefficiency3",
+    icon = "__GalacticTrade__/graphics/icons/moneysign.png",
+    effects ={
+    },
+    prerequisites = {
+      "tradingefficiency2"
+    },
+    unit = {
+      count = 350,
+      ingredients = {
+        {"science-pack-1", 1},
+        {"science-pack-2", 1},
+        {"science-pack-3", 1}
+      },
+      time = 30
+    },
+    upgrade = true,
+    order = "g-t-a-c"
   }
 })
