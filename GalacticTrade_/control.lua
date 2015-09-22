@@ -289,14 +289,12 @@ end
 function gt_tech_value(item)
 	value = 0
 	for _,tech in pairs(game.get_player(1).force.technologies) do
-		if tech.enabled then
-			for i,eff in pairs(tech.effects) do
-				if eff.recipe ~= nil and eff.recipe == item then
-					for _,pre in ipairs(tech.prerequisites) do
-						value = value + pre.research_unit_energy
-					end
-					value = value + tech.research_unit_energy
+		for i,eff in pairs(tech.effects) do
+			if eff.recipe ~= nil and eff.recipe == item then
+				for _,pre in ipairs(tech.prerequisites) do
+					value = value + pre.research_unit_energy
 				end
+				value = value + tech.research_unit_energy
 			end
 		end
 	end
@@ -304,10 +302,10 @@ function gt_tech_value(item)
 end
 
 function gt_get_item_value(item, num)
-	tmp_values = {}
+	has_recipe = false
 	value = 0
 
-	if item == nil then
+	if item == nil or num == nil then
 		return nil
 	end
 
@@ -315,22 +313,25 @@ function gt_get_item_value(item, num)
 		return 0
 	end
 
+	if global.gt_base_values[item] ~= nil then
+		return global.gt_base_values[item] * num
+	end
+
 	if global.gt_base_values[item] == nil and not(global.gt_blacklist[item]) then
 		for n,r in pairs(game.get_player(1).force.recipes) do
 			if r ~= nil and not(r.hidden) then
 				for _,product in pairs(r.products) do
 					if product ~= nil and product.name == item and product.amount ~= nil and product.amount > 0 and #r.ingredients > 0 then
-						for i, a in pairs(r.ingredients) do
-							if tmp_values[a.name] == -1 then
-								global.gt_base_values[item] = 0
-								return 0
-							end
-							tmp_values[a.name] = -1
+						has_recipe = true
+						for _, a in pairs(r.ingredients) do
+							global.gt_base_values[item] = 0
 							sub_value = gt_get_item_value(a.name, a.amount)
-							tmp_values[a.name] = 0
 							if sub_value == 0 then
+								break
+							end
+							if sub_value < 1 then
 								global.gt_base_values[item] = 0
-								return 0
+								break
 							else
 								value = value + sub_value
 							end
@@ -338,17 +339,60 @@ function gt_get_item_value(item, num)
 						value = math.ceil(value / product.amount)
 						value = value + math.floor(r.energy) --adds value for crafting time
 						value = value + gt_tech_value(item) --adds value for technology it requires
-						global.gt_base_values[item] = value
-						value = value * num
-						return value
+						if value > 0 then
+							global.gt_base_values[item] = value
+							value = value * num
+							return value
+						end
+					end
+				end
+			end
+		end
+		if not(has_recipe) then
+			recipe_value = 0
+			has_recipe = true
+			for n,r in pairs(game.get_player(1).force.recipes) do
+				if r ~= nil and not(r.hidden) then
+					for _, ing in pairs(r.ingredients) do
+						if ing.name == item then
+							has_recipe = true
+							break
+						end
+					end
+					if has_recipe then
+						for _,p in pairs(r.products) do
+							if p ~= nil and p.name == item and p.amount ~= nil and p.amount > 0 and #r.ingredients > 0 then
+								recipe_value = recipe_value + gt_get_item_value(p.name,p.amount)
+							end
+						end
+						if recipe_value ~= 0 then
+							for _,ing in pairs(r.ingredients) do
+								if ing.name ~= item then
+									recipe_value = recipe_value - gt_get_item_value(ing.name,ing.amount)
+								end
+							end
+						end
+					end
+					if recipe_value < 1 then
+						has_recipe = false
+					else
+						global.gt_base_values[item] = recipe_value
+						return recipe_value
 					end
 				end
 			end
 		end
 	else
-		value = global.gt_base_values[item] * num
-		return value
+		global.gt_base_values[item] = 0
+		return 0
 	end
+	if has_recipe then
+		global.gt_base_values[item] = 0
+		return 0
+	end
+
+	global.gt_blacklist[item] = true
+	global.gt_base_values[item] = 0
 	return -1
 end
 
@@ -637,11 +681,6 @@ end
 
 
 game.on_event(defines.events.on_tick, function(event)
-	for p in pairs(game.players) do
-		if global.gt_credits == nil or type(global.gt_credits) == 'number' then
-			load_values(p)
-		end
-	end
 
 	if #game.players > 0 and game.tick >= 2 and global.gt_loading_index < global.gt_total_items_unfiltered and not(global.gt_loading_done) then
 		current_item = nil
@@ -660,6 +699,8 @@ game.on_event(defines.events.on_tick, function(event)
 				global.gt_total_items = global.gt_total_items + 1
 			elseif value == -1 then
 				global.gt_blacklist[current_item.name] = true
+				global.gt_base_values[current_item.name] = 0
+				table.insert(global.gt_items_without_cost,current_item.name)
 			end
 		else
 			if current_item ~= nil and global.gt_base_values[current_item.name] > 0 then
@@ -673,6 +714,12 @@ game.on_event(defines.events.on_tick, function(event)
 		global.gt_loading_index = global.gt_loading_index + 1
 	else 
 		if #game.players >0 and game.tick > 2 and not(global.gt_loading_done) then
+			for c, item in pairs(game.item_prototypes) do 
+				if global.gt_base_values[item] == 0 then
+					global.gt_base_values[item] = nil
+					gt_get_item_value(item,1)
+				end
+			end
 			global.gt_loading_index = 0
 			global.gt_loading_done = true
 			if game.get_player(1).gui.center.item_value_loading_frame ~= nil then

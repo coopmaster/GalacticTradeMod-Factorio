@@ -26,16 +26,16 @@ function load_config(player_index)
 
 		global.gt_starting_credits 					= 0 --gives you some starting credits
 		global.gt_shared_wallet 					= true --in multiplayer, everyone shares the same credits and chests
-		global.gt_tech_cost_modifier 				= 0.25 --affects how much of the tech cost goes into the item, 1 meaning full, 0.5 half, 0 none, 2 double, ect
+		global.gt_tech_cost_modifier 				= 0.5 --affects how much of the tech cost goes into the item, 1 meaning full, 0.5 half, 0 none, 2 double, ect
+		global.gt_instant_buy_button_enabled 		= true 
+		global.gt_instant_sell_button_enabled 		= true
 
 
 		--mod support, change to true for any mods you want support for
 		gt_alt_vanila_values 						= false
 		gt_NEARMod_values_support 					= false
-		gt_DytechMod_values_support 				= false --WARNING these values may not be balanced and may need to be modified
+		gt_DytechMod_values_support 				= true --WARNING these values may not be balanced and may need to be modified
 		gt_torchlight_support 						= false --just removes the torchlights that aren't used with the torchlight mod
-		global.gt_instant_buy_button_enabled 		= true 
-		global.gt_instant_sell_button_enabled 		= true
 
 
 		--unused config options (for now)
@@ -127,6 +127,28 @@ function load_config(player_index)
 		global.gt_extra_item_values["silicon"] = 50
 		global.gt_extra_item_values["sand"] = 10
 		global.gt_extra_item_values["sulfur-wood"] = 15
+		global.gt_extra_blacklist["rocket-part"] = true
+		global.gt_extra_item_values["copper-chunks"] = 2.2
+		global.gt_extra_blacklist["copper-chunks"] = false
+		global.gt_extra_item_values["iron-chunks"] = 2.2
+		global.gt_extra_blacklist["iron-chunks"] = false
+		global.gt_extra_blacklist["laser-gun-tank"] = true
+		global.gt_extra_item_values["small-corpse"] = 5
+		global.gt_extra_blacklist["small-corpse"] = false
+		global.gt_extra_item_values["medium-corpse"] = 25
+		global.gt_extra_blacklist["medium-corpse"] = false
+		global.gt_extra_item_values["big-corpse"] = 50
+		global.gt_extra_blacklist["big-corpse"] = false
+		global.gt_extra_item_values["berserk-corpse"] = 75
+		global.gt_extra_blacklist["berserk-corpse"] = false
+		global.gt_extra_item_values["elder-corpse"] = 100
+		global.gt_extra_blacklist["elder-corpse"] = false
+		global.gt_extra_item_values["king-corpse"] = 125
+		global.gt_extra_blacklist["king-corpse"] = false
+		global.gt_extra_item_values["queen-corpse"] = 150
+		global.gt_extra_blacklist["queen-corpse"] = false
+		global.gt_extra_item_values["crystal"] = 200
+		global.gt_extra_blacklist["crystal"] = false
 	end
 	--copy what you get from TroubleItems.txt below this line then edit the values after the lines that start with global.gt_extra_item_values, look above for examples.
 end

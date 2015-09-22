@@ -55,6 +55,7 @@ end
 local function update_item_selector_gui(player_index)
 	p = game.get_player(player_index)
 
+	p.gui.left.item_selection.gt_selection_table.item_selection_page_num_label.caption = "page " .. global.gt_current_buying_trading_page[player_index]+1
 	p.gui.left.item_selection.gt_selection_table.item_table.destroy()
 	p.gui.left.item_selection.gt_selection_table.gt_page_right_button.destroy()
 
@@ -62,7 +63,7 @@ local function update_item_selector_gui(player_index)
 
 	p.gui.left.item_selection.gt_selection_table.add{type="button", name="gt_page_right_button", style="button_style",caption=">>"}
 
-	p.gui.left.item_selection.gt_selection_table.gt_selection_top_center_table.gt_search_bar_textfield.text=global.gt_current_search_term[player_index]
+	-- p.gui.left.item_selection.gt_selection_table.gt_selection_top_center_table.gt_search_bar_textfield.text=global.gt_current_search_term[player_index]
 
 	items = 0
 	if global.gt_current_buying_trading_page[player_index] == 0 then
