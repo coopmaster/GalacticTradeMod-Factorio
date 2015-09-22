@@ -1,0 +1,6 @@
+require("prototypes.item.trading-chest")
+require("prototypes.recipe.trading-chest")
+require("prototypes.entity.trading-chest")
+require("prototypes.technology.trading-chest")
+--require("prototypes.scripts.item-credit-values")
+--require("data-final-fixes")

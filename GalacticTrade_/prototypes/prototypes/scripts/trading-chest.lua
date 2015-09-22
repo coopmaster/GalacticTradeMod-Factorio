@@ -74,7 +74,7 @@ local function update_item_selector_gui(player_index)
 	for s, item in pairs(game.item_prototypes) do
 		tmp_values = {}
 		if gt_get_item_value(item.name, 1) > 0 and (global.gt_blacklist[item.name]==nil or global.gt_blacklist[item.name]==false) then
-			if current_item >= (global.gt_current_buying_trading_page[player_index]*global.gt_items_per_row[player_index]*global.gt_items_per_collum[player_index]) and (global.gt_current_search_term[player_index] == "" or string.match(item.name,global.gt_current_search_term[player_index])) then
+			if current_item >= (global.gt_current_buying_trading_page[player_index]*global.gt_items_per_row[player_index]*global.gt_items_per_collum[player_index])+1 and (global.gt_current_search_term[player_index] == "" or string.match(item.name,global.gt_current_search_term[player_index])) then
 				p.gui.left.item_selection.gt_selection_table.item_table.add{type="checkbox",name=item.name.."_selection_button",state = false, style = item.name.."_gt_button_style"}
 				items = items + 1
 				if items >= global.gt_items_per_row[player_index]*global.gt_items_per_collum[player_index] then
