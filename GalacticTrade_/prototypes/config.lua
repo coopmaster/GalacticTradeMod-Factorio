@@ -34,13 +34,13 @@ function load_config(player_index)
 		--mod support, change to true for any mods you want support for
 		gt_alt_vanila_values 						= false
 		gt_NEARMod_values_support 					= false
-		gt_DytechMod_values_support 				= true --WARNING these values may not be balanced and may need to be modified
+		gt_DytechMod_values_support 				= false --WARNING these values may not be balanced and may need to be modified
 		gt_torchlight_support 						= false --just removes the torchlights that aren't used with the torchlight mod
 
 
 		--unused config options (for now)
-		global.gt_dynamic_economy 					= true --there is a living and breathing economy and what you buy and sell affects it.
-		global.gt_initial_supply_modifier 			= 1000000 --basically this number means that at 1000000 credit value, the initial supply will be 0
+		-- global.gt_dynamic_economy 					= true --there is a living and breathing economy and what you buy and sell affects it.
+		-- global.gt_initial_supply_modifier 			= 1000000 --basically this number means that at 1000000 credit value, the initial supply will be 0
 
 	end
 
