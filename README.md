@@ -278,6 +278,10 @@ Version# (Date): What has changed...
 
  -fixed skipping the first item for the page
 
+ -fixed not messaging all players in multiplayer when trade happens
+ 
+ -fixed selling items not giving correct profit and selling chest not displaying correct projected profit
+
 
 ##Video Spotlights
 https://youtu.be/TtKj1XPknTc
