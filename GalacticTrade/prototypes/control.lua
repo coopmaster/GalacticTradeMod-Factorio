@@ -1,4 +1,4 @@
-require "defines"
+--require "defines"
 require("prototypes.scripts.trading-chest")
 require 'config'
 --require "luasocket"
@@ -223,9 +223,9 @@ local function load_values(player_index)
 	global.gt_supply = global.gt_supply or {}
 	global.gt_demand = global.gt_demand or {}
 
-	-- for name, value in pairs(global.gt_base_values) do--add initial supply to items
-	-- 	global.gt_supply[name] = global.gt_supply[name] or math.ceil((math.sqrt(global.gt_initial_supply_modifier)*-value)+global.gt_initial_supply_modifier)
-	-- end
+	for name, value in pairs(global.gt_base_values) do--add initial supply to items
+		global.gt_supply[name] = global.gt_supply[name] or math.ceil((math.sqrt(global.gt_initial_supply_modifier)*-value)+global.gt_initial_supply_modifier)
+	end
 
 	global.gt_current_buying_trading_page = global.gt_current_buying_trading_page or {}
 	for i in pairs(game.players) do
@@ -259,13 +259,13 @@ local function create_gui(player_index)
 
 end
 
-game.on_init(function()
+script.on_init(function()
 	for i in pairs(game.players) do
 		load_values(i)
 	end
 end)
 
-game.on_event(defines.events.on_player_created, function(event)
+script.on_event(defines.events.on_player_created, function(event)
 	load_values(event.player_index)
 	create_gui(event.player_index)
 	if event.player_index == 1 then
@@ -442,9 +442,7 @@ end
 
 function message_all_players(message)
 	for i in pairs(game.players) do
-		if global.gt_enable_trade_alert[i] then
-			game.get_player(i).print(message)
-		end
+		game.get_player(i).print(message)
 	end
 end
 
@@ -467,15 +465,14 @@ function get_buying_price(item,amount) --not much yet
 	return gt_get_item_value(item,amount)
 end
 
-function sell_resources_from_chest(chest,items,amounts)--set items and amounts to nil for everything in the chest
+function sell_resources_from_chest(chest,items,amounts)--set items and amounts to null for everything in the chest
 	profit = 0
 	chest_index = get_sellingchest_index(chest)
 
 	for i,a in pairs(chest.get_inventory(1).get_contents()) do
 		if i ~= nil then
-			price = get_selling_price(i,a)
-			if get_selling_price(i,a) > 0 and not(global.gt_blacklist[i]) then
-				if items ~= nil and #items > 0 then
+			if get_selling_price(i,1) > 0 and not(global.gt_blacklist[i]) then
+				if items ~= nil then
 					for indx,name in ipairs(items) do
 						if name == i then
 							if amounts[indx] ~= nil then
@@ -493,46 +490,48 @@ function sell_resources_from_chest(chest,items,amounts)--set items and amounts t
 						end
 					end
 				else
-					profit = profit + price
+					profit = profit + get_selling_price(i,a)
 					chest.get_inventory(1).remove({name = i,count = a})
 				end
 			end
 		end
-	end
-	if not global.gt_shared_wallet then
-		if global.gt_transaction_history[chest_index][global.gt_history_day] == nil then
-			global.gt_transaction_history[chest_index][global.gt_history_day] = {}
-			global.gt_transaction_history[chest_index][global.gt_history_day].profit = 0
-			global.gt_transaction_history[chest_index][global.gt_history_day].expenses = 0
-		end
 
-		if global.gt_transaction_history[chest_index][global.gt_history_day].profit == nil then
-			global.gt_transaction_history[chest_index][global.gt_history_day].profit = 0
-		end
-		if global.gt_transaction_history[chest_index][global.gt_history_day].expenses == nil then
-			global.gt_transaction_history[chest_index][global.gt_history_day].expenses = 0
-		end
+		if not global.gt_shared_wallet then
+			if global.gt_transaction_history[chest_index][global.gt_history_day] == nil then
+				global.gt_transaction_history[chest_index][global.gt_history_day] = {}
+				global.gt_transaction_history[chest_index][global.gt_history_day].profit = 0
+				global.gt_transaction_history[chest_index][global.gt_history_day].expenses = 0
+			end
 
-		global.gt_credits[chest_index] = global.gt_credits[chest_index] + profit
+			if global.gt_transaction_history[chest_index][global.gt_history_day].profit == nil then
+				global.gt_transaction_history[chest_index][global.gt_history_day].profit = 0
+			end
+			if global.gt_transaction_history[chest_index][global.gt_history_day].expenses == nil then
+				global.gt_transaction_history[chest_index][global.gt_history_day].expenses = 0
+			end
 
-		global.gt_transaction_history[chest_index][global.gt_history_day].profit = global.gt_transaction_history[chest_index][global.gt_history_day].profit + profit
-	else
-		if global.gt_transaction_history[1][global.gt_history_day] == nil then
-			global.gt_transaction_history[1][global.gt_history_day] = {}
-			global.gt_transaction_history[1][global.gt_history_day].profit = 0
-			global.gt_transaction_history[1][global.gt_history_day].expenses = 0
+			global.gt_credits[chest_index] = global.gt_credits[chest_index] + profit
+
+			global.gt_transaction_history[chest_index][global.gt_history_day].profit = global.gt_transaction_history[chest_index][global.gt_history_day].profit + profit
+		else
+			if global.gt_transaction_history[1][global.gt_history_day] == nil then
+				global.gt_transaction_history[1][global.gt_history_day] = {}
+				global.gt_transaction_history[1][global.gt_history_day].profit = 0
+				global.gt_transaction_history[1][global.gt_history_day].expenses = 0
+			end
+
+			if global.gt_transaction_history[1][global.gt_history_day].profit == nil then
+				global.gt_transaction_history[1][global.gt_history_day].profit = 0
+			end
+			if global.gt_transaction_history[1][global.gt_history_day].expenses == nil then
+				global.gt_transaction_history[1][global.gt_history_day].expenses = 0
+			end
+
+			global.gt_credits[1] = global.gt_credits[1] + profit
+
+			global.gt_transaction_history[1][global.gt_history_day].profit = global.gt_transaction_history[1][global.gt_history_day].profit + profit
+
 		end
-
-		if global.gt_transaction_history[1][global.gt_history_day].profit == nil then
-			global.gt_transaction_history[1][global.gt_history_day].profit = 0
-		end
-		if global.gt_transaction_history[1][global.gt_history_day].expenses == nil then
-			global.gt_transaction_history[1][global.gt_history_day].expenses = 0
-		end
-
-		global.gt_credits[1] = global.gt_credits[1] + profit
-
-		global.gt_transaction_history[1][global.gt_history_day].profit = global.gt_transaction_history[1][global.gt_history_day].profit + profit
 	end
 end
 
@@ -667,17 +666,21 @@ end
 function gt_update_opened_selling_chest_info(player_index)
 	chest_value = 0
 	chest_index = get_opened_sellingchest_index(player_index)
-	for item, amount in pairs(global.sellingtradingchests.chest[chest_index].get_inventory(1).get_contents()) do
-		price = get_selling_price(item,amount)
-		if price > 0 then
-			chest_value = chest_value + price
+	for item, z in pairs(global.sellingtradingchests.chest[chest_index].get_inventory(1).get_contents()) do
+		if gt_get_item_value(item,1) > 0 then
+			if item ~= "coin" then
+				chest_value = chest_value + (gt_get_item_value(item,z)-(gt_get_item_value(item,z)*gt_get_trade_efficiency()))
+			else
+				chest_value = chest_value + gt_get_item_value(item,z)
+			end
 		end
 	end
+	chest_value = math.floor(chest_value)
 	p.gui.left.tradingchest_sell.tradingchest_sell_table.chest_value_table.chest_value_label.caption = comma_value(chest_value)
 end
 
 
-game.on_event(defines.events.on_tick, function(event)
+script.on_event(defines.events.on_tick, function(event)
 
 	if #game.players > 0 and game.tick >= 2 and global.gt_loading_index < global.gt_total_items_unfiltered and not(global.gt_loading_done) then
 		current_item = nil
@@ -908,7 +911,7 @@ game.on_event(defines.events.on_tick, function(event)
 					p.gui.left.tradingchest_sell.tradingchest_sell_table.add{type="checkbox",name="sellingchest_enabled_checkbox",state=global.sellingtradingchests.enabled[item_index], caption="Enabled"}
 
 					p.gui.left.tradingchest_sell.tradingchest_sell_table.add{name="merch_info_table", type="table", colspan=3} --table of labels that tells merchant cut
-					p.gui.left.tradingchest_sell.tradingchest_sell_table.merch_info_table.add{type="label", name="merch_info_label_constant_1", caption="Trade Efficiency: "}
+					p.gui.left.tradingchest_sell.tradingchest_sell_table.merch_info_table.add{type="label", name="merch_info_label_constant_1", caption="Merchant Cut: "}
 					p.gui.left.tradingchest_sell.tradingchest_sell_table.merch_info_table.add{type="label", name="merch_cut_label", caption=gt_get_trade_efficiency()*100}
 					p.gui.left.tradingchest_sell.tradingchest_sell_table.merch_info_table.add{type="label", name="merch_info_label_constant_2", caption="%"}
 
@@ -962,8 +965,10 @@ game.on_event(defines.events.on_tick, function(event)
 	local time = game.daytime
 
 	if 0.0 <= time and time <=0.01 and not global.gt_traded_today and #game.players > 0 then
-		if #global.buyingtradingchests >0 or #global.sellingtradingchests >0 then
-			message_all_players("The trade ship is here to trade resources")
+		for i in pairs(global.buyingtradingchests.chest) do 
+			if global.gt_enable_trade_alert[i] and (#global.buyingtradingchests.chest > 0 or #global.sellingtradingchests.chest > 0) then
+				game.get_player(i).print("The trade ship is here to trade resources")
+			end
 		end
 
 		global.gt_traded_today = true
@@ -1151,7 +1156,7 @@ function create_transaction_info_gui(player_index)
 
 end
 
-game.on_event(defines.events.on_gui_click, function(event)
+script.on_event(defines.events.on_gui_click, function(event)
 	p = game.get_player(event.player_index)
 	if event.element.name == "gt_info_button" then
 		if p.gui.top.gt_info_frame ~= nil then

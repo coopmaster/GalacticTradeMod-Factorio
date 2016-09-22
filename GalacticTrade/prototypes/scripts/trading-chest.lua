@@ -1,10 +1,10 @@
-require "defines"
+
 
 function get_opened_buyingchest_index(player_index)
 	index = 0
 	for i,c in ipairs(global.buyingtradingchests.chest) do --this gets the trading chest based off of the position of the one clicked on and based on what we have listed
 		if c ~= nil then
-			if c.position.x == game.get_player(player_index).opened.position.x and c.position.y == game.get_player(player_index).opened.position.y then
+			if c.position.x == get_player(player_index).opened.position.x and c.position.y ==get_player(player_index).opened.position.y then
 				index = i
 				break
 			end
@@ -17,7 +17,7 @@ function get_opened_sellingchest_index(player_index)
 	index = 0
 	for i,c in ipairs(global.sellingtradingchests.chest) do --this gets the trading chest based off of the position of the one clicked on and based on what we have listed
 		if c ~= nil then
-			if c.position.x == game.get_player(player_index).opened.position.x and c.position.y == game.get_player(player_index).opened.position.y then
+			if c.position.x == get_player(player_index).opened.position.x and c.position.y ==get_player(player_index).opened.position.y then
 				index = i
 				break
 			end
@@ -53,7 +53,7 @@ function get_sellingchest_index(chest)
 end
 
 local function update_item_selector_gui(player_index)
-	p = game.get_player(player_index)
+	p =get_player(player_index)
 
 	p.gui.left.item_selection.gt_selection_table.item_selection_page_num_label.caption = "page " .. global.gt_current_buying_trading_page[player_index]+1
 	p.gui.left.item_selection.gt_selection_table.item_table.destroy()
@@ -101,7 +101,7 @@ function gt_update_items_shown(player_index)
 end
 
 
-game.on_event(defines.events.on_built_entity, function(event)
+script.on_event(defines.events.on_built_entity, function(event)
 	if event.created_entity.name == "trading-chest-buy" or event.created_entity.name == "logistic-trading-chest-buy" then
 		player_id = 1
 		if not(global.gt_shared_wallet) then
@@ -124,7 +124,7 @@ game.on_event(defines.events.on_built_entity, function(event)
 	end
  end)
 
-game.on_event(defines.events.on_robot_built_entity, function(event)
+script.on_event(defines.events.on_robot_built_entity, function(event)
 	if event.created_entity.name == "trading-chest-buy" or event.created_entity.name == "logistic-trading-chest-buy" then
 		player_id = 1
 		table.insert(global.buyingtradingchests.chest,event.created_entity)
@@ -141,7 +141,7 @@ game.on_event(defines.events.on_robot_built_entity, function(event)
 	end
  end)
 
-game.on_event(defines.events.on_preplayer_mined_item, function(event)
+script.on_event(defines.events.on_preplayer_mined_item, function(event)
 	if (event.entity.name == "trading-chest-buy" or event.entity.name == "logistic-trading-chest-buy") and global.buyingtradingchests ~= nil then
 		temp = {}
 		temp_id = {}
@@ -182,7 +182,7 @@ game.on_event(defines.events.on_preplayer_mined_item, function(event)
 	end
 end)
 
-game.on_event(defines.events.on_entity_died, function(event)
+script.on_event(defines.events.on_entity_died, function(event)
 	if (event.entity.name == "trading-chest-buy" or event.entity.name == "logistic-trading-chest-buy") and global.buyingtradingchests ~= nil then
 		temp = {}
 		temp_id = {}
@@ -223,7 +223,7 @@ game.on_event(defines.events.on_entity_died, function(event)
 	end
 end)
 
-game.on_event(defines.events.on_robot_pre_mined, function(event)
+script.on_event(defines.events.on_robot_pre_mined, function(event)
 	if (event.entity.name == "trading-chest-buy" or event.entity.name == "logistic-trading-chest-buy") and global.buyingtradingchests ~= nil then
 		temp = {}
 		temp_id = {}
@@ -265,7 +265,7 @@ game.on_event(defines.events.on_robot_pre_mined, function(event)
 end)
 
 function gt_trading_chest_button_click(event)
-	p = game.get_player(event.player_index)
+	p =get_player(event.player_index)
 	if event.element.name == "amount_update_button" then
 		gt_update_opened_buying_chest_info(event.player_index)
 		return
@@ -282,13 +282,13 @@ function gt_trading_chest_button_click(event)
 	end
 
 	if event.element.name == "instant_buy_button" then
-		buy_resources_from_chest(game.get_player(event.player_index).opened)
+		buy_resources_from_chest(get_player(event.player_index).opened)
 
 		return
 	end
 
 	if event.element.name == "instant_sell_button" then
-		sell_resources_from_chest(game.get_player(event.player_index).opened,nil,nil)
+		sell_resources_from_chest(get_player(event.player_index).opened,nil,nil)
 
 		return
 	end
@@ -347,7 +347,7 @@ function gt_trading_chest_button_click(event)
 
 			--update gui
 			if global.buyingtradingchests.item_selected[chest_index] ~= "blank" then
-				p.gui.left.tradingchest_buy.item_view_table.item_label.caption = game.get_localised_item_name(global.buyingtradingchests.item_selected[chest_index])
+				p.gui.left.tradingchest_buy.item_view_table.item_label.caption = global.buyingtradingchests.item_selected[chest_index].localised_name
 			else
 				p.gui.left.tradingchest_buy.item_view_table.item_label.caption = "blank"
 			end
@@ -394,7 +394,7 @@ function gt_trading_chest_button_click(event)
 
 			global.buyingtradingchests.item_selected[item_index] = item.name
 			if item.name ~= "blank" then
-				p.gui.left.tradingchest_buy.item_view_table.item_label.caption = game.get_localised_item_name(item.name)
+				p.gui.left.tradingchest_buy.item_view_table.item_label.caption = item.localised_name
 			else
 				p.gui.left.tradingchest_buy.item_view_table.item_label.caption = "blank"
 			end

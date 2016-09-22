@@ -18,14 +18,14 @@ data:extend({
     type = "recipe",
     name = "logistic-trading-chest-sell",
     enabled = "false",
-    ingredients = {{"iron-plate", 10},{"electronic-circuit", 15},{"smart-chest", 1}},
+    ingredients = {{"iron-plate", 10},{"electronic-circuit", 15},{"iron-chest", 1}},
     result = "logistic-trading-chest-sell"
   },
   {
     type = "recipe",
     name = "logistic-trading-chest-buy",
     enabled = "false",
-    ingredients = {{"iron-plate", 10},{"electronic-circuit", 15},{"smart-chest", 1}},
+    ingredients = {{"iron-plate", 10},{"electronic-circuit", 15},{"iron-chest", 1}},
     result = "logistic-trading-chest-buy"
   }
 })

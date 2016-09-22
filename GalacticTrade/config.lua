@@ -1,3 +1,19 @@
+
+-- DEBUGGING
+DEBUG = true
+
+if DEBUG then
+	script.on_event(defines.events.on_player_created, function(event)
+		local player = game.players[event.player_index]
+		player.insert{name="express-transport-belt", count=200}
+		player.insert{name="steel-axe", count=10}
+		player.insert{name="medium-electric-pole", count=100}
+		player.cheat_mode = true
+		player.gui.top.add{type="button", name="debug", caption="Debug"}
+		player.force.research_all_technologies()
+	end)
+end
+
 function load_config(player_index)
 
 	global.gt_extra_item_values = global.gt_extra_item_values or {}

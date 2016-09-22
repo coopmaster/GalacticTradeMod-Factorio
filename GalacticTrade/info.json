@@ -1,0 +1,10 @@
+{
+  "name": "GalacticTrade",
+  "version": "0.6.5",
+  "title": "Galactic Trade",
+  "author": "Cooper Mahring",
+  "contact": "coopmaster24@gmail.com",
+  "description": "Sell your junk or start a buisness. Use what you sell to buy what you need!",
+  "factorio_version": "0.14",
+  "dependencies": ["base >= 0.14.7"]
+}
