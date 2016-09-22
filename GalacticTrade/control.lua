@@ -966,10 +966,10 @@ script.on_event(defines.events.on_tick, function(event)
 
 
 
-	local time = event.tick
+	local time = math.fmod(get_player(1).surface.daytime + 0.5, 1)
 
 	if 0.0 <= time and time <=0.01 and not global.gt_traded_today and #game.players > 0 then
-		if #global.buyingtradingchests >0 or #global.sellingtradingchests >0 then
+		if #global.buyingtradingchests > 0 or #global.sellingtradingchests > 0 then
 			message_all_players("The trade ship is here to trade resources")
 		end
 
@@ -990,7 +990,8 @@ script.on_event(defines.events.on_tick, function(event)
 	if 0.1<=time and time <=0.11 then
 		global.gt_traded_today = false
 	end
-end)
+end
+)
 
 function create_transaction_info_gui(player_index)
 	if p.gui.top.gt_info_frame ~= nil then
