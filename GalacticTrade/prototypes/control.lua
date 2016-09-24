@@ -1,4 +1,4 @@
-require "defines"
+--require "defines"
 require("prototypes.scripts.trading-chest")
 require 'config'
 --require "luasocket"
@@ -259,13 +259,13 @@ local function create_gui(player_index)
 
 end
 
-game.on_init(function()
+script.on_init(function()
 	for i in pairs(game.players) do
 		load_values(i)
 	end
 end)
 
-game.on_event(defines.events.on_player_created, function(event)
+script.on_event(defines.events.on_player_created, function(event)
 	load_values(event.player_index)
 	create_gui(event.player_index)
 	if event.player_index == 1 then
@@ -680,7 +680,7 @@ function gt_update_opened_selling_chest_info(player_index)
 end
 
 
-game.on_event(defines.events.on_tick, function(event)
+script.on_event(defines.events.on_tick, function(event)
 
 	if #game.players > 0 and game.tick >= 2 and global.gt_loading_index < global.gt_total_items_unfiltered and not(global.gt_loading_done) then
 		current_item = nil
@@ -1156,7 +1156,7 @@ function create_transaction_info_gui(player_index)
 
 end
 
-game.on_event(defines.events.on_gui_click, function(event)
+script.on_event(defines.events.on_gui_click, function(event)
 	p = game.get_player(event.player_index)
 	if event.element.name == "gt_info_button" then
 		if p.gui.top.gt_info_frame ~= nil then

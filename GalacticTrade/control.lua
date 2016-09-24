@@ -1,9 +1,14 @@
-require "defines"
-require("prototypes.scripts.trading-chest")
-require 'config'
+--require "defines"
+require "prototypes.scripts.trading-chest"
+require "config"
 --require "luasocket"
 
 --game.getplayer(index or name) for multiplayer support
+
+
+function get_player(player_index)
+	return game.players[player_index];
+end
 
 function comma_value(n) -- credit http://richard.warburton.it
 	if n ~= nil then
@@ -239,33 +244,33 @@ end
 
 local function remove_gui(player_index)
 
-	if game.get_player(player_index).gui.top.gt_money ~= nil then
-		game.get_player(player_index).gui.top.gt_money.destroy()
-		game.get_player(player_index).gui.top.gt_info_button.destroy()
+	if get_player(player_index).gui.top.gt_money ~= nil then
+		get_player(player_index).gui.top.gt_money.destroy()
+		get_player(player_index).gui.top.gt_info_button.destroy()
 	end
-	if game.get_player(player_index).gui.top.gt_info_frame then
-		game.get_player(player_index).gui.top.gt_info_frame.destroy()
+	if get_player(player_index).gui.top.gt_info_frame then
+		get_player(player_index).gui.top.gt_info_frame.destroy()
 	end
 
 end
 
 local function create_gui(player_index)
 	remove_gui(player_index)
-	if game.get_player(player_index).gui.top.gt_money == nil then
-		game.get_player(player_index).gui.top.add{type="frame", name="gt_money", caption = '', style='frame_style', direction='vertical'}
-		game.get_player(player_index).gui.top.gt_money.add{type="label", name="gt_credits", caption="0 credits"}
-		game.get_player(player_index).gui.top.add{type="button",name="gt_info_button",caption="GT"}
+	if get_player(player_index).gui.top.gt_money == nil then
+		get_player(player_index).gui.top.add{type="frame", name="gt_money", caption = '', style='frame_style', direction='vertical'}
+		get_player(player_index).gui.top.gt_money.add{type="label", name="gt_credits", caption="0 credits"}
+		get_player(player_index).gui.top.add{type="button",name="gt_info_button",caption="GT"}
 	end
 
 end
 
-game.on_init(function()
+script.on_init(function()
 	for i in pairs(game.players) do
 		load_values(i)
 	end
 end)
 
-game.on_event(defines.events.on_player_created, function(event)
+script.on_event(defines.events.on_player_created, function(event)
 	load_values(event.player_index)
 	create_gui(event.player_index)
 	if event.player_index == 1 then
@@ -274,11 +279,11 @@ game.on_event(defines.events.on_player_created, function(event)
 end)
 
 function gt_get_trade_efficiency()
-	if game.get_player(1).force.technologies["tradingefficiency3"].researched then
+	if get_player(1).force.technologies["tradingefficiency3"].researched then
 		return 0.01
-	elseif game.get_player(1).force.technologies["tradingefficiency2"].researched then
+	elseif get_player(1).force.technologies["tradingefficiency2"].researched then
 		return 0.05
-	elseif game.get_player(1).force.technologies["tradingefficiency1"].researched then
+	elseif get_player(1).force.technologies["tradingefficiency1"].researched then
 		return 0.10
 	else
 		return 0.15
@@ -288,7 +293,7 @@ end
 
 function gt_tech_value(item)
 	value = 0
-	for _,tech in pairs(game.get_player(1).force.technologies) do
+	for _,tech in pairs(get_player(1).force.technologies) do
 		for i,eff in pairs(tech.effects) do
 			if eff.recipe ~= nil and eff.recipe == item then
 				for _,pre in ipairs(tech.prerequisites) do
@@ -318,7 +323,7 @@ function gt_get_item_value(item, num)
 	end
 
 	if global.gt_base_values[item] == nil and not(global.gt_blacklist[item]) then
-		for n,r in pairs(game.get_player(1).force.recipes) do
+		for n,r in pairs(get_player(1).force.recipes) do
 			if r ~= nil and not(r.hidden) then
 				for _,product in pairs(r.products) do
 					if product ~= nil and product.name == item and product.amount ~= nil and product.amount > 0 and #r.ingredients > 0 then
@@ -351,7 +356,7 @@ function gt_get_item_value(item, num)
 		if not(has_recipe) then
 			recipe_value = 0
 			has_recipe = true
-			for n,r in pairs(game.get_player(1).force.recipes) do
+			for n,r in pairs(get_player(1).force.recipes) do
 				if r ~= nil and not(r.hidden) then
 					for _, ing in pairs(r.ingredients) do
 						if ing.name == item then
@@ -433,7 +438,7 @@ function initiate_reload_item_values()
 end
 
 function create_loading_gui(player_index)
-	p = game.get_player(player_index)
+	p = get_player(player_index)
 	p.gui.center.add{type="frame", name="item_value_loading_frame", caption = 'Loading Item Values for Galactic Trade...', style='frame_style', direction='vertical'}
 	p.gui.center.item_value_loading_frame.add{name="item_value_loading_table", type="table", colspan=1}
 	p.gui.center.item_value_loading_frame.item_value_loading_table.add{name="item_value_loading_progress", type="progressbar", size=global.gt_total_items_unfiltered, value = 0}
@@ -443,7 +448,7 @@ end
 function message_all_players(message)
 	for i in pairs(game.players) do
 		if global.gt_enable_trade_alert[i] then
-			game.get_player(i).print(message)
+			get_player(i).print(message)
 		end
 	end
 end
@@ -624,7 +629,7 @@ function buy_resources_from_chest(chest)--buy items and amounts to null for ever
 				end
 
 			else
-				game.get_player(global.buyingtradingchests.player_id[chest_index]).print("Unable to complete your sale")
+				get_player(global.buyingtradingchests.player_id[chest_index]).print("Unable to complete your sale")
 			end
 		end
 	end
@@ -677,7 +682,7 @@ function gt_update_opened_selling_chest_info(player_index)
 end
 
 
-game.on_event(defines.events.on_tick, function(event)
+script.on_event(defines.events.on_tick, function(event)
 
 	if #game.players > 0 and game.tick >= 2 and global.gt_loading_index < global.gt_total_items_unfiltered and not(global.gt_loading_done) then
 		current_item = nil
@@ -705,8 +710,8 @@ game.on_event(defines.events.on_tick, function(event)
 			end
 		end
 		if global.gt_show_loading_gui then
-			game.get_player(1).gui.center.item_value_loading_frame.item_value_loading_table.item_value_loading_progress.value = game.get_player(1).gui.center.item_value_loading_frame.item_value_loading_table.item_value_loading_progress.value + (1/global.gt_total_items_unfiltered)
-			game.get_player(1).gui.center.item_value_loading_frame.item_value_loading_table.item_value_loading_label.caption = global.gt_loading_index.."/"..global.gt_total_items_unfiltered
+			get_player(1).gui.center.item_value_loading_frame.item_value_loading_table.item_value_loading_progress.value = get_player(1).gui.center.item_value_loading_frame.item_value_loading_table.item_value_loading_progress.value + (1/global.gt_total_items_unfiltered)
+			get_player(1).gui.center.item_value_loading_frame.item_value_loading_table.item_value_loading_label.caption = global.gt_loading_index.."/"..global.gt_total_items_unfiltered
 		end
 		global.gt_loading_index = global.gt_loading_index + 1
 	else 
@@ -719,8 +724,8 @@ game.on_event(defines.events.on_tick, function(event)
 			end
 			global.gt_loading_index = 0
 			global.gt_loading_done = true
-			if game.get_player(1).gui.center.item_value_loading_frame ~= nil then
-				game.get_player(1).gui.center.item_value_loading_frame.destroy()
+			if get_player(1).gui.center.item_value_loading_frame ~= nil then
+				get_player(1).gui.center.item_value_loading_frame.destroy()
 			end
 			if #global.gt_items_without_cost ~= 0 then
 				s = "mod_name_here = true\nif mod_name_here then\n"
@@ -732,9 +737,11 @@ game.on_event(defines.events.on_tick, function(event)
 					s = s .. "\n  global.gt_extra_blacklist[\"" .. b .. "\"] = false"
 				end
 				s = s .. "\nend\n--copy and paste this into the bottom of the config.lua located inside of the galactic trade mod folder, make sure that it's just above the last \"end\".\n--You will want to add values to the end of the lines which might take some trial and error to make sure that they are correct.\n--There are other things you might want to do, check in the config.lua for instructions on how to do other things"
-				game.makefile("GalacticTrade/TroubleItems.txt",s)
-				game.get_player(1).print("There are "..#global.gt_items_without_cost.." base resoureces (items without recipies) without cost (listed above)")
-				game.get_player(1).print("Go to your factorio directory, inside of the \"script-output\\GalacticTrade\\TroubleItems.txt\" file for more information.")
+				
+				game.write_file("GalacticTrade/TroubleItems.txt", s)
+
+				get_player(1).print("There are "..#global.gt_items_without_cost.." base resoureces (items without recipies) without cost (listed above)")
+				get_player(1).print("Go to your factorio directory, inside of the \"script-output\\GalacticTrade\\TroubleItems.txt\" file for more information.")
 			end
 			total_blacklisted = 0
 			for a,b in pairs(global.gt_blacklist) do
@@ -746,21 +753,21 @@ game.on_event(defines.events.on_tick, function(event)
 			for _, item in pairs(game.item_prototypes) do 
 				output = output .. "\n" .. item.name .. " = " .. gt_get_item_value(item.name,1)
 			end
-			game.makefile("GalacticTrade/ItemValues.txt",output)
+			game.write_file("GalacticTrade/ItemValues.txt",output)
 		end
 	end
 
 	for index in pairs(game.players) do
-		if game.get_player(index).gui.top.gt_money ~= nil then
+		if get_player(index).gui.top.gt_money ~= nil then
 			if not(global.gt_shared_wallet) then
-	  			game.get_player(index).gui.top.gt_money.gt_credits.caption = "credits: "..comma_value(math.floor(global.gt_credits[index]))
+	  			get_player(index).gui.top.gt_money.gt_credits.caption = "credits: "..comma_value(math.floor(global.gt_credits[index]))
 	  		else
-	  			game.get_player(index).gui.top.gt_money.gt_credits.caption = "credits: "..comma_value(math.floor(global.gt_credits[1]))
+	  			get_player(index).gui.top.gt_money.gt_credits.caption = "credits: "..comma_value(math.floor(global.gt_credits[1]))
 	  		end
 	  	else
 	  		create_gui(index)
 		end
-		p = game.get_player(index)
+		p = get_player(index)
 		if p.opened ~= nil and p.opened.valid then
 
 			if (p.opened.name == "trading-chest-buy" or p.opened.name == "logistic-trading-chest-buy") then --buying chest gui
@@ -784,11 +791,11 @@ game.on_event(defines.events.on_tick, function(event)
 
 					p.gui.left.tradingchest_buy.add{name="item_view_table", type="table", colspan=1}
 					if not(global.gt_shared_wallet) and #game.players > 1 then
-						p.gui.left.tradingchest_buy.item_view_table.add{type="label",name="owner_label",caption="Owner: "..game.get_player(global.buyingtradingchests.player_id[item_index]).name}
+						p.gui.left.tradingchest_buy.item_view_table.add{type="label",name="owner_label",caption="Owner: "..get_player(global.buyingtradingchests.player_id[item_index]).name}
 					end
 					p.gui.left.tradingchest_buy.item_view_table.add{type="checkbox",name="buyingchest_enabled_checkbox",state=global.buyingtradingchests.enabled[item_index], caption="Enabled"}
 					if global.buyingtradingchests.item_selected[item_index] ~= "blank" then
-						p.gui.left.tradingchest_buy.item_view_table.add{type="label",name="item_label",caption=game.get_localised_item_name(global.buyingtradingchests.item_selected[item_index])}
+						p.gui.left.tradingchest_buy.item_view_table.add{type="label",name="item_label",caption=global.buyingtradingchests.item_selected[item_index].localised_name}
 					else
 						p.gui.left.tradingchest_buy.item_view_table.add{type="label",name="item_label",caption="blank"}
 					end
@@ -902,7 +909,7 @@ game.on_event(defines.events.on_tick, function(event)
 					p.gui.left.tradingchest_sell.add{type="table", name="tradingchest_sell_table",colspan=1}
 
 					if not(global.gt_shared_wallet) and #game.players > 1 then
-						p.gui.left.tradingchest_sell.tradingchest_sell_table.add{type="label",name="owner_label",caption="Owner: "..game.get_player(global.buyingtradingchests.player_id[item_index]).name}
+						p.gui.left.tradingchest_sell.tradingchest_sell_table.add{type="label",name="owner_label",caption="Owner: "..get_player(global.buyingtradingchests.player_id[item_index]).name}
 					end
 
 					p.gui.left.tradingchest_sell.tradingchest_sell_table.add{type="checkbox",name="sellingchest_enabled_checkbox",state=global.sellingtradingchests.enabled[item_index], caption="Enabled"}
@@ -959,10 +966,10 @@ game.on_event(defines.events.on_tick, function(event)
 
 
 
-	local time = game.daytime
+	local time = math.fmod(get_player(1).surface.daytime + 0.5, 1)
 
 	if 0.0 <= time and time <=0.01 and not global.gt_traded_today and #game.players > 0 then
-		if #global.buyingtradingchests >0 or #global.sellingtradingchests >0 then
+		if #global.buyingtradingchests > 0 or #global.sellingtradingchests > 0 then
 			message_all_players("The trade ship is here to trade resources")
 		end
 
@@ -983,7 +990,8 @@ game.on_event(defines.events.on_tick, function(event)
 	if 0.1<=time and time <=0.11 then
 		global.gt_traded_today = false
 	end
-end)
+end
+)
 
 function create_transaction_info_gui(player_index)
 	if p.gui.top.gt_info_frame ~= nil then
@@ -1002,7 +1010,7 @@ function create_transaction_info_gui(player_index)
 	if not(global.gt_shared_wallet) and #game.players > 1 then
 		pt_table = p.gui.top.gt_info_frame.gt_info_transaction_values_table.add{type="table",name="gt_transaction_info_player_select_table",colspan=3}
 		pt_table.add{type="button",name="gt_previous_player_info_button",caption="<"}
-		pt_table.add{type="label",name="gt_info_current_showing_player",caption=game.get_player(transaction_id).name}
+		pt_table.add{type="label",name="gt_info_current_showing_player",caption=get_player(transaction_id).name}
 		pt_table.add{type="button",name="gt_next_player_info_button",caption=">"}
 		p.gui.top.gt_info_frame.gt_info_transaction_values_table.add{type="label",name="gt_info_blank_label_2",caption=""}
 	end
@@ -1151,8 +1159,8 @@ function create_transaction_info_gui(player_index)
 
 end
 
-game.on_event(defines.events.on_gui_click, function(event)
-	p = game.get_player(event.player_index)
+script.on_event(defines.events.on_gui_click, function(event)
+	p = get_player(event.player_index)
 	if event.element.name == "gt_info_button" then
 		if p.gui.top.gt_info_frame ~= nil then
 			p.gui.top.gt_info_frame.destroy()
